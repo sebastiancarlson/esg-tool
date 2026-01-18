@@ -1,0 +1,19 @@
+esg_desktop/
+├── app.py                      # Huvudapp (Streamlit)
+├── database/
+│   ├── esg_master.db     # Förladdad databas
+│   ├── init_db.py              # Skapar schema ovan
+│   └── sample_data.sql         # Testdata
+├── modules/
+│   ├── scope1_calculator.py    # Beräknar Scope 1
+│   ├── scope2_calculator.py    # Beräknar Scope 2
+│   ├── scope3_pendling.py      # Konsultpendling
+│   ├── distance_api.py         # OpenStreetMap Nominatim
+│   ├── report_csrd.py          # CSRD-rapportgenerator
+│   ├── report_ecovadis.py      # EcoVadis-mall
+│   └── export_excel.py         # Excel-export för revision
+├── assets/
+│   ├── company_logo.png
+│   └── csrd_template.md
+├── requirements.txt
+└── README.md
