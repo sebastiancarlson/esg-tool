@@ -15,9 +15,8 @@ except ImportError:
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
 
-
 # ============================================
-# CONFIG & CSS (Dark Premium Theme)
+# 1. AUTHENTICATION & CONFIG
 # ============================================
 st.set_page_config(
     page_title="ESG Hållbarhetsindex", 
@@ -26,60 +25,131 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Init session state for navigation
-if 'page' not in st.session_state:
-    st.session_state.page = "Översikt"
+def check_password():
+    """Returns `True` if the user had a correct password."""
 
-# Avancerad CSS för Dark Mode & Navigation
-st.markdown("""
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["username"] == "admin" and st.session_state["password"] == "SkillESG2026!":
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store password
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # First run, show inputs
+        st.markdown(
+            """
+            <style>
+            .stApp {
+                background-color: #0A0E17;
+                background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);
+            }
+            .auth-container {
+                max-width: 400px;
+                margin: 100px auto;
+                padding: 40px;
+                background: rgba(255,255,255,0.05);
+                border-radius: 20px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.1);
+                text-align: center;
+            }
+            h1 { color: white; margin-bottom: 30px; font-weight: 300; }
+            </style>
+            """, unsafe_allow_html=True
+        )
+        
+        col1, col2, col3 = st.columns([1,1,1])
+        with col2:
+            st.markdown("<br><br><br>", unsafe_allow_html=True)
+            st.markdown("<h1>ESG <span style='color:#00E5FF; font-weight:800;'>Admin</span></h1>", unsafe_allow_html=True)
+            st.text_input("Användarnamn", key="username")
+            st.text_input("Lösenord", type="password", key="password")
+            if st.button("Logga in", type="primary", use_container_width=True):
+                password_entered()
+                st.rerun()
+            
+            if "password_correct" in st.session_state and not st.session_state["password_correct"]:
+                st.error("😕 Fel användarnamn eller lösenord")
+        return False
+        
+    return True
+
+if not check_password():
+    st.stop()
+
+# ============================================
+# 2. THEME ENGINE
+# ============================================
+
+# Init Theme State
+if 'dark_mode' not in st.session_state:
+    st.session_state['dark_mode'] = True
+
+# Define Palettes
+theme = {
+    'bg': '#0A0E17' if st.session_state['dark_mode'] else '#F2F4F8',
+    'bg_gradient': 'radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%)' if st.session_state['dark_mode'] else 'linear-gradient(180deg, #F2F4F8 0%, #E2E8F0 100%)',
+    'card_bg': 'rgba(21, 27, 43, 0.6)' if st.session_state['dark_mode'] else '#FFFFFF',
+    'card_border': 'rgba(255, 255, 255, 0.08)' if st.session_state['dark_mode'] else 'rgba(0, 0, 0, 0.05)',
+    'text_main': '#F0F2F6' if st.session_state['dark_mode'] else '#171717',
+    'text_muted': '#B0B8C6' if st.session_state['dark_mode'] else '#64748B',
+    'sidebar_bg': '#0d1117' if st.session_state['dark_mode'] else '#FFFFFF',
+    'shadow': '0 4px 20px rgba(0, 0, 0, 0.3)' if st.session_state['dark_mode'] else '0 2px 15px rgba(0, 0, 0, 0.05)',
+    'input_bg': 'rgba(255,255,255,0.05)' if st.session_state['dark_mode'] else '#F8FAFC'
+}
+
+# Apply CSS
+st.markdown(f"""
 <style>
     /* --- FONTS & COLORS --- */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
     
-    :root {
+    :root {{
         --esg-blue-primary: #2962FF;  
         --esg-cyan: #00E5FF;          
-        --bg-dark: #0A0E17;
-        --bg-card: #151B2B;             
-        --text-main: #F0F2F6;
-        --text-muted: #B0B8C6;
-    }
+        --bg-dark: {theme['bg']};
+        --bg-card: {theme['card_bg']};             
+        --text-main: {theme['text_main']};
+        --text-muted: {theme['text_muted']};
+    }}
 
     /* --- GLOBAL LAYOUT --- */
-    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] {{
         font-family: 'Inter', sans-serif;
         color: var(--text-main) !important;
         background-color: var(--bg-dark) !important;
-    }
+    }}
     
-    .stApp {
+    .stApp {{
         background-color: var(--bg-dark);
-        background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);
+        background-image: {theme['bg_gradient']};
         background-attachment: fixed;
-    }
+    }}
 
     /* --- SIDEBAR --- */
-    [data-testid="stSidebar"] {
-        background-color: #0d1117 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
+    [data-testid="stSidebar"] {{
+        background-color: {theme['sidebar_bg']} !important;
+        border-right: 1px solid {theme['card_border']};
+    }}
     
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{
         color: var(--text-main) !important;
-    }
+    }}
 
     /* --- TEXT COLORS --- */
-    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {{
         color: var(--text-main) !important;
-    }
+    }}
 
-    /* --- BUTTONS IN SIDEBAR --- */
     /* --- SIDEBAR BUTTONS (Navigation) --- */
-    [data-testid="stSidebar"] div.stButton {
+    [data-testid="stSidebar"] div.stButton {{
         margin-bottom: -15px !important; /* Reduce vertical gap */
-    }
+    }}
 
-    [data-testid="stSidebar"] div.stButton > button {
+    [data-testid="stSidebar"] div.stButton > button {{
         width: 100% !important;
         text-align: left !important;
         justify-content: flex-start !important;
@@ -93,51 +163,58 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 5px;
         align-items: center;
-    }
+    }}
 
     /* Fix för inre text-container i knappen */
-    [data-testid="stSidebar"] div.stButton > button > div {
+    [data-testid="stSidebar"] div.stButton > button > div {{
         justify-content: flex-start !important;
         text-align: left !important;
-    }
+    }}
 
-    div.stButton > button:hover {
-        background-color: rgba(255, 255, 255, 0.05);
-        color: white;
+    div.stButton > button:hover {{
+        background-color: rgba(125, 125, 125, 0.1);
+        color: var(--text-main);
         transform: translateX(5px);
-    }
+    }}
     
-    div.stButton > button:focus {
+    div.stButton > button:focus {{
         border: none;
         outline: none;
-        color: white;
-    }
+        color: var(--text-main);
+    }}
 
     /* --- CARDS (Glassmorphism) --- */
-    .css-card {
-        background-color: rgba(21, 27, 43, 0.6);
+    .css-card {{
+        background-color: {theme['card_bg']};
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid {theme['card_border']};
         border-radius: 16px;
         padding: 24px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
+        box-shadow: {theme['shadow']};
+    }}
     
-    .css-card h3 {
-        color: #FFFFFF !important;
+    .css-card h3 {{
+        color: var(--text-main) !important;
         font-weight: 700;
         margin-bottom: 1rem;
-    }
+    }}
+
+    /* --- INPUT FIELDS --- */
+    .stTextInput input, .stNumberInput input, .stSelectbox div, .stDateInput div {{
+        background-color: {theme['input_bg']} !important;
+        color: var(--text-main) !important;
+        border-color: {theme['card_border']} !important;
+    }}
 
     /* --- GRADIENT TEXT --- */
-    .gradient-text {
-        background: linear-gradient(90deg, #FFFFFF 0%, #00E5FF 100%);
+    .gradient-text {{
+        background: linear-gradient(90deg, {theme['text_main']} 0%, #00E5FF 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         font-weight: 800;
-    }
+    }}
 
 </style>
 """, unsafe_allow_html=True)
@@ -177,6 +254,8 @@ def init_db():
         try:
             conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN inspirerade_barn_antal INTEGER DEFAULT 0")
             conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN utbildning_timmar_snitt REAL DEFAULT 0")
+            conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN employee_category TEXT")
+            conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN gender_pay_gap_pct REAL")
         except: pass
             
         conn.execute("""
@@ -265,20 +344,6 @@ def init_db():
             )
         """)
 
-        # Seed ESRS Requirements if empty
-        try:
-            check = conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0]
-            if check == 0:
-                requirements = [
-                    ("E1-6", "Gross Scope 1, 2, 3 and Total GHG emissions", "Klimatpåverkan och växthusgaser", 1),
-                    ("S1-1", "Policies related to own workforce", "Policys för egen personal", 1),
-                    ("S1-14", "Health and safety indicators", "Hälsa och säkerhet", 1),
-                    ("S1-16", "Remuneration metrics (Pay gap)", "Lönegap mellan könen", 1),
-                    ("G1-1", "Business conduct policies", "Affärsetik och policys", 1)
-                ]
-                conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, 1, 1)", requirements)
-        except: pass
-
         # --- MISSING TABLES FOR SCOPE 1, 2 & 3 & REPORTS ---
         conn.execute("""
             CREATE TABLE IF NOT EXISTS f_Drivmedel (
@@ -347,9 +412,27 @@ def init_db():
         try:
             conn.execute("INSERT INTO system_config (key, value, description) VALUES ('company_name', 'Företaget AB', 'Företagsnamn')")
         except: pass
+        
+        # Seed ESRS Requirements if empty
+        try:
+            check = conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0]
+            if check == 0:
+                requirements = [
+                    ("E1-6", "Gross Scope 1, 2, 3 and Total GHG emissions", "Klimatpåverkan och växthusgaser", 1),
+                    ("S1-1", "Policies related to own workforce", "Policys för egen personal", 1),
+                    ("S1-14", "Health and safety indicators", "Hälsa och säkerhet", 1),
+                    ("S1-16", "Remuneration metrics (Pay gap)", "Lönegap mellan könen", 1),
+                    ("G1-1", "Business conduct policies", "Affärsetik och policys", 1)
+                ]
+                conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, 1, 1)", requirements)
+        except: pass
 
 # Run DB initialization once
 init_db()
+
+# Init session state for navigation
+if 'page' not in st.session_state:
+    st.session_state.page = "Översikt"
 
 # ============================================
 # CUSTOM SIDEBAR NAVIGATION
@@ -358,7 +441,7 @@ with st.sidebar:
     # Premium Header
     st.markdown("""
         <div style="text-align: center; padding: 10px 0 25px 0;">
-            <h1 style="margin: 0; font-weight: 800; letter-spacing: 4px; color: #FFFFFF; font-size: 2.5rem;">ESG</h1>
+            <h1 style="margin: 0; font-weight: 800; letter-spacing: 4px; color: """+theme['text_main']+"""; font-size: 2.5rem;">ESG</h1>
             <div style="height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;"></div>
             <p style="margin: 0; color: #00E5FF; font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase;">
                 Hållbarhetsindex
@@ -393,13 +476,17 @@ with st.sidebar:
     st.markdown("---")
     
     # Compact Profile Card
-    st.markdown("""
-        <div style="background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05);">
+    card_bg = "rgba(255, 255, 255, 0.03)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.03)"
+    border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
+    text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
+    
+    st.markdown(f"""
+        <div style="background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col};">
             <div style="display: flex; align-items: center;">
                 <div style="width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px; box-shadow: 0 2px 8px rgba(0, 229, 255, 0.2);">J</div>
                 <div>
-                    <div style="color: white; font-weight: 600; font-size: 13px;">Jenny Svensson</div>
-                    <div style="color: #B0B8C6; font-size: 10px;">System Admin</div>
+                    <div style="color: {text_col}; font-weight: 600; font-size: 13px;">Jenny Svensson</div>
+                    <div style="color: {theme['text_muted']}; font-size: 10px;">System Admin</div>
                 </div>
             </div>
         </div>
@@ -410,7 +497,15 @@ with st.sidebar:
     with c1:
         st.toggle("Prognos", value=True)
     with c2:
-        st.toggle("Mörkt", value=True, disabled=True)
+        is_dark = st.toggle("Mörkt", value=st.session_state['dark_mode'], key="theme_toggle")
+        if is_dark != st.session_state['dark_mode']:
+            st.session_state['dark_mode'] = is_dark
+            st.rerun()
+    
+    # Logout button
+    if st.button("Logga ut", type="secondary", use_container_width=True):
+        st.session_state["password_correct"] = False
+        st.rerun()
 
 conn = get_connection()
 page = st.session_state.page
@@ -452,7 +547,7 @@ elif page == "Strategi (CSRD)":
     
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.subheader("Dubbel Väsentlighetsanalys (DMA)")
-    st.markdown("Identifiera och bedöm hållbarhetsfrågor enligt CSRD/ESRS-krav.")
+    st.markdown("Identifiera och bedöm hållbarhetsfrågor baserat på påverkan och finansiell risk.")
     
     # Hämtar data
     dma_data = dma_tool.get_dma_data(conn)
@@ -481,11 +576,18 @@ elif page == "Strategi (CSRD)":
         
         # Styling
         fig.update_traces(textposition='top center', marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')))
+        
+        # Plotly theme adjustment
+        grid_color = "rgba(255,255,255,0.1)" if st.session_state['dark_mode'] else "rgba(0,0,0,0.1)"
+        font_col = "white" if st.session_state['dark_mode'] else "black"
+        
         fig.update_layout(
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font_color="white",
+            font_color=font_col,
             height=500,
+            xaxis=dict(gridcolor=grid_color),
+            yaxis=dict(gridcolor=grid_color),
             margin=dict(l=20, r=20, t=40, b=20)
         )
         
@@ -627,7 +729,7 @@ elif page == "HR-Data":
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
-# SIDA 4: GOVERNANCE (NY)
+# SIDA 4: GOVERNANCE (UPGRADED)
 # ============================================
 elif page == "Governance":
     st.title("Governance & Leverantörskedja")
@@ -702,6 +804,7 @@ elif page == "Governance":
 
             with col2:
                 st.markdown("### 🚚 Hållbara Inköp")
+                # it_inkop_co2 flyttas egentligen till Scope 3 Spend, men vi kan ha kvar den som manuell override
                 it_inkop_co2 = st.number_input("Estimerat CO2 inköp IT (ton)", min_value=0.0, help="Manuellt värde. Använd Scope 3-kalkylatorn för detaljer.")
                 lev_krav = st.slider("% Lev. som signerat CoC (Code of Conduct)", 0, 100, 50)
             
