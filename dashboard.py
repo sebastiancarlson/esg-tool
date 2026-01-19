@@ -198,6 +198,22 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)"
         ]
         for sql in tables: conn.execute(sql)
+        
+        # Populate ESRS Requirements if empty
+        count = conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0]
+        if count == 0:
+            esrs_data = [
+                ("E1-1", "Övergripande klimatstrategi", "Klimat", 1, 1),
+                ("E1-6", "Växthusgasutsläpp (Scope 1, 2, 3)", "Klimat", 1, 1),
+                ("E1-9", "Finansiella effekter av klimatrisker", "Klimat", 1, 1),
+                ("S1-1", "Policyer för egen personal", "Socialt", 1, 1),
+                ("S1-16", "Lönegap mellan könen", "Socialt", 1, 1),
+                ("G1-1", "Företagskultur och affärsetik", "Styrning", 1, 1),
+                ("G1-3", "Förebyggande av korruption", "Styrning", 1, 1)
+            ]
+            conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, ?, ?)", esrs_data)
+            conn.commit()
+            
         try: conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN ledning_kvinnor INTEGER DEFAULT 0")
         except: pass
         try: conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN ledning_man INTEGER DEFAULT 0")
@@ -313,23 +329,119 @@ def render_calc():
     st.title("Beräkningar")
     t1, t2 = st.tabs(["🚌 Pendling", "💸 Inköp (Spend)"])
     with t1:
-        st.info("Här beräknas pendlingsdata för konsulter.")
-        if st.button("Kör pendlingsanalys"):
+        show_page_help("Pendling", "Hantera personal, kundplatser och uppdrag för att beräkna pendlingsutsläpp.")
+        
+        c1, c2 = st.columns([1, 1])
+        
+        with c1:
+            with st.expander("👤 Hantera Personal", expanded=False):
+                with st.form("add_person"):
+                    fnamn = st.text_input("Förnamn")
+                    enamn = st.text_input("Efternamn")
+                    pnr = st.text_input("Hem-postnummer")
+                    if st.form_submit_button("Spara Person"):
+                        with get_connection() as conn:
+                            conn.execute("INSERT INTO d_Personal (fornamn, efternamn, hem_postnummer) VALUES (?, ?, ?)", (fnamn, enamn, pnr))
+                            conn.commit()
+                        st.success("Person sparad!")
+                        st.rerun()
+                
+                with get_connection() as conn:
+                    pers_df = pd.read_sql("SELECT * FROM d_Personal", conn)
+                    if not pers_df.empty:
+                        st.dataframe(pers_df, hide_index=True)
+
+            with st.expander("🏢 Hantera Kundplatser", expanded=False):
+                with st.form("add_site"):
+                    knamn = st.text_input("Kundens namn")
+                    kpnr = st.text_input("Kundens postnummer")
+                    if st.form_submit_button("Spara Kundplats"):
+                        with get_connection() as conn:
+                            conn.execute("INSERT INTO d_Kundsiter (kund_namn, postnummer) VALUES (?, ?)", (knamn, kpnr))
+                            conn.commit()
+                        st.success("Kundplats sparad!")
+                        st.rerun()
+                
+                with get_connection() as conn:
+                    site_df = pd.read_sql("SELECT * FROM d_Kundsiter", conn)
+                    if not site_df.empty:
+                        st.dataframe(site_df, hide_index=True)
+
+        with c2:
+            with st.expander("📅 Skapa Uppdrag", expanded=True):
+                with get_connection() as conn:
+                    pers_list = pd.read_sql("SELECT person_id, fornamn || ' ' || efternamn as namn FROM d_Personal", conn)
+                    site_list = pd.read_sql("SELECT kund_plats_id, kund_namn FROM d_Kundsiter", conn)
+                
+                if not pers_list.empty and not site_list.empty:
+                    with st.form("add_assignment"):
+                        pid = st.selectbox("Välj Person", options=pers_list['person_id'], format_func=lambda x: pers_list[pers_list['person_id']==x]['namn'].values[0])
+                        sid = st.selectbox("Välj Kund", options=site_list['kund_plats_id'], format_func=lambda x: site_list[site_list['kund_plats_id']==x]['kund_namn'].values[0])
+                        start = st.date_input("Startdatum")
+                        slut = st.date_input("Slutdatum", value=datetime.now())
+                        dagar = st.slider("Arbetsdagar per vecka", 1.0, 7.0, 5.0)
+                        dist = st.number_input("Distans (valfri km, lämna 0 för API-beräkning)", 0.0)
+                        fard = st.selectbox("Färdmedel", ["Bil", "Elbil", "Buss", "Tåg", "Cykel", "Okänt"])
+                        
+                        if st.form_submit_button("Spara Uppdrag"):
+                            with get_connection() as conn:
+                                conn.execute("""
+                                    INSERT INTO f_Uppdrag (person_id, kund_plats_id, startdatum, slutdatum, dagar_per_vecka, distans_km, fardmedel)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                                """, (pid, sid, start.strftime('%Y-%m-%d'), slut.strftime('%Y-%m-%d'), dagar, dist if dist > 0 else None, fard))
+                                conn.commit()
+                            st.success("Uppdrag sparat!")
+                            st.rerun()
+                else:
+                    st.warning("Lägg till personal och kundplatser först.")
+
+        st.markdown("---")
+        st.subheader("Kör Beräkningar")
+        if st.button("Kör pendlingsanalys", type="primary"):
             with get_connection() as conn:
                 res = scope3_pendling.calculate_all_consultants(conn)
-                st.success(f"Beräknat {res['antal_uppdrag']} uppdrag. Totalt {res['total_co2_ton']:.1f} ton CO2.")
+                if 'error' in res:
+                    st.error(f"Ett fel uppstod: {res['error']}")
+                else:
+                    st.success(f"Beräknat {res['antal_uppdrag']} nya uppdrag. Totalt {res['total_co2_ton']:.2f} ton CO2.")
+        
+        with get_connection() as conn:
+            calc_df = pd.read_sql("""
+                SELECT p.fornamn || ' ' || p.efternamn as Konsult, k.kund_namn as Kund, 
+                       b.totalt_co2_kg as 'CO2 (kg)', b.datakvalitet as Kvalitet
+                FROM f_Pendling_Beraknad b
+                JOIN f_Uppdrag u ON b.uppdrag_id = u.uppdrag_id
+                JOIN d_Personal p ON u.person_id = p.person_id
+                JOIN d_Kundsiter k ON u.kund_plats_id = k.kund_plats_id
+            """, conn)
+            if not calc_df.empty:
+                st.dataframe(calc_df, hide_index=True, use_container_width=True)
+
     with t2:
+        show_page_help("Inköp (Spend)", "Registrera inköp av varor och tjänster för att beräkna Scope 3 utsläpp baserat på spenderat belopp.")
         with st.form("spend_form"):
             c1, c2, c3 = st.columns(3)
             cat = c1.selectbox("Kategori", scope3_spend.get_categories())
-            prod = c2.text_input("Produkt")
-            sek = c3.number_input("Belopp (SEK)", 0.0)
+            prod = c2.text_input("Beskrivning / Produkt", placeholder="T.ex. 5st Laptops")
+            sek = c3.number_input("Totalt Belopp (SEK)", 0.0, step=100.0)
+            
             if st.form_submit_button("Spara inköp"):
-                scope3_spend.add_spend_item(cat, "", prod, sek, "2024")
-                st.success("Inköp sparat!")
+                if sek > 0:
+                    scope3_spend.add_spend_item(cat, "", prod, sek, "2024")
+                    st.success("Inköp sparat!")
+                    st.rerun()
+                else:
+                    st.warning("Ange ett belopp större än 0.")
         
         summ = scope3_spend.get_spend_summary("2024")
-        if not summ.empty: st.dataframe(summ, hide_index=True, use_container_width=True)
+        if not summ.empty: 
+            st.subheader("Sammanställning per Kategori")
+            st.dataframe(summ, hide_index=True, use_container_width=True)
+            
+            st.subheader("Senaste Inmatningar")
+            with get_connection() as conn:
+                items = pd.read_sql("SELECT created_date as Datum, category as Kategori, product_name as Beskrivning, spend_sek as Belopp, co2e_tonnes as 'CO2 (ton)' FROM f_Scope3_Calculations WHERE reporting_period = '2024' ORDER BY id DESC LIMIT 10", conn)
+                st.dataframe(items, hide_index=True, use_container_width=True)
 
 @st.fragment
 def render_reports():
