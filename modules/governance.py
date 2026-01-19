@@ -1,6 +1,8 @@
 import pandas as pd
+import streamlit as st
 from datetime import datetime, timedelta
 
+@st.cache_data(ttl=600)
 def get_policies(conn):
     """Hämtar alla policys och beräknar status."""
     try:
@@ -37,7 +39,7 @@ def add_policy(conn, name, version, owner, last_updated, esrs_req):
     if isinstance(last_updated, str):
         date_obj = datetime.strptime(last_updated, '%Y-%m-%d')
     else:
-        date_obj = datetime.combine(last_updated, datetime.min.time()) # Konvertera date till datetime
+        date_obj = datetime.combine(last_updated, datetime.min.time()) 
         
     next_review = date_obj + timedelta(days=365)
     
@@ -47,7 +49,9 @@ def add_policy(conn, name, version, owner, last_updated, esrs_req):
         VALUES (?, ?, ?, ?, ?, ?, 1)
     """, (name, version, owner, date_obj.strftime('%Y-%m-%d'), next_review.strftime('%Y-%m-%d'), esrs_req))
     conn.commit()
+    st.cache_data.clear()
 
 def delete_policy(conn, policy_id):
     conn.execute("DELETE FROM f_Governance_Policies WHERE id = ?", (policy_id,))
     conn.commit()
+    st.cache_data.clear()

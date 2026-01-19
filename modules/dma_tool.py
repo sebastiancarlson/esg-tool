@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 from datetime import datetime
 
 # ESRS Mapping Table based on keywords or categories
@@ -23,6 +24,7 @@ ESRS_MAP = {
     "Anti-korruption": "G1"
 }
 
+@st.cache_data(ttl=600)
 def get_dma_data(conn):
     """Hämtar all DMA-data sorterad på väsentlighet."""
     try:
@@ -58,12 +60,15 @@ def add_dma_topic(conn, topic, impact, financial, category):
         datetime.now().strftime('%Y-%m-%d')
     ))
     conn.commit()
+    st.cache_data.clear()
 
 def delete_dma_topic(conn, topic_id):
     """Tar bort ett ämne."""
     conn.execute("DELETE FROM f_DMA_Materiality WHERE id = ?", (topic_id,))
     conn.commit()
+    st.cache_data.clear()
 
+@st.cache_data(ttl=600)
 def get_material_topics(conn):
     """Hämtar endast de ämnen som bedömts som väsentliga."""
     return pd.read_sql("SELECT * FROM f_DMA_Materiality WHERE is_material = 1", conn)

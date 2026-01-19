@@ -1,9 +1,8 @@
 import pandas as pd
+import streamlit as st
 from datetime import datetime
 
 # Schablonfaktorer (kg CO2e per SEK exkl moms)
-# Baserat på uppskattade branschsnitt (SCB/Naturvårdsverket input-output)
-# Dessa bör uppdateras årligen med inflation
 EMISSION_FACTORS = {
     'IT-hårdvara (Laptops, Skärmar)': 0.045,
     'IT-tjänster & Licenser': 0.004,
@@ -39,14 +38,17 @@ def add_spend_item(conn, category, subcategory, spend_sek, period, quality='Esti
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (category, subcategory, spend_sek, factor, co2_tonnes, quality, period, datetime.now().strftime('%Y-%m-%d')))
     conn.commit()
+    st.cache_data.clear()
     return co2_tonnes
 
+@st.cache_data(ttl=600)
 def get_all_items(conn, period=None):
     query = "SELECT * FROM f_Scope3_Calculations"
     if period:
         query += f" WHERE reporting_period = '{period}'"
     return pd.read_sql(query, conn)
 
+@st.cache_data(ttl=600)
 def get_spend_summary(conn, period):
     return pd.read_sql(f"""
         SELECT category, SUM(spend_sek) as total_sek, SUM(co2e_tonnes) as total_co2 

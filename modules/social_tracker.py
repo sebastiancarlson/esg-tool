@@ -1,5 +1,7 @@
 import pandas as pd
+import streamlit as st
 
+@st.cache_data(ttl=600)
 def get_hr_summary(conn, year):
     """Hämtar sammanställning av HR-data för ett specifikt år."""
     try:
@@ -31,6 +33,7 @@ def save_extended_hr_data(conn, data_dict):
         data_dict['gender_pay_gap_pct']
     ))
     conn.commit()
+    st.cache_data.clear()
 
 def add_social_metric(conn, metric_type, value, period, source, category):
     """Lägger till ett specifikt socialt mätetal."""
@@ -39,3 +42,4 @@ def add_social_metric(conn, metric_type, value, period, source, category):
         VALUES (?, ?, ?, ?, ?)
     """, (metric_type, value, period, source, category))
     conn.commit()
+    st.cache_data.clear()

@@ -1,5 +1,7 @@
 import pandas as pd
+import streamlit as st
 
+@st.cache_data(ttl=600)
 def get_esrs_index(conn, year):
     """
     Genererar en statuslista över ESRS-krav baserat på tillgänglig data.
