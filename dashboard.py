@@ -77,6 +77,7 @@ st.markdown("""
     div.stButton > button {
         width: 100%;
         text-align: left;
+        justify-content: flex-start;
         border: none;
         background-color: transparent;
         color: var(--text-muted);
@@ -139,120 +140,126 @@ if not os.path.exists(DB_PATH) and os.path.exists(os.path.join("..", DB_PATH)):
 def get_connection():
     return sqlite3.connect(DB_PATH)
 
-# Init DB tables
-with get_connection() as conn:
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_HR_Arsdata (
-            ar INTEGER PRIMARY KEY,
-            enps_intern INTEGER,
-            cnps_konsult INTEGER,
-            antal_interna INTEGER,
-            antal_konsulter INTEGER,
-            nyanstallda_ar INTEGER,
-            sjukfranvaro_procent REAL,
-            arbetsolyckor_antal INTEGER,
-            allvarliga_olyckor INTEGER DEFAULT 0,
-            ledning_kvinnor INTEGER DEFAULT 0,
-            ledning_man INTEGER DEFAULT 0,
-            inspirerade_barn_antal INTEGER DEFAULT 0,
-            utbildning_timmar_snitt REAL DEFAULT 0
-        )
-    """)
-    try:
-        conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN inspirerade_barn_antal INTEGER DEFAULT 0")
-        conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN utbildning_timmar_snitt REAL DEFAULT 0")
-    except: pass
-        
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Pendling_Beraknad (
-            berakning_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            uppdrag_id INTEGER,
-            antal_arbetsdagar REAL,
-            total_km REAL,
-            emissionsfaktor_kg_per_km REAL,
-            totalt_co2_kg REAL,
-            datakvalitet TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS system_config (key TEXT PRIMARY KEY, value TEXT, description TEXT)
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Vasentlighet (id INTEGER PRIMARY KEY AUTOINCREMENT, omrade TEXT, impact_score INTEGER, fin_score INTEGER, ar INTEGER)
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Governance_Inkop (ar INTEGER PRIMARY KEY, uppforandekod_pct INTEGER, visselblasare_antal INTEGER, gdpr_incidenter INTEGER, it_inkop_co2 REAL, lev_krav_pct INTEGER)
-    """)
+# ============================================
+# DATABASE INITIALIZATION (CACHED)
+# ============================================
+@st.cache_resource
+def init_db():
+    with get_connection() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_HR_Arsdata (
+                ar INTEGER PRIMARY KEY,
+                enps_intern INTEGER,
+                cnps_konsult INTEGER,
+                antal_interna INTEGER,
+                antal_konsulter INTEGER,
+                nyanstallda_ar INTEGER,
+                sjukfranvaro_procent REAL,
+                arbetsolyckor_antal INTEGER,
+                allvarliga_olyckor INTEGER DEFAULT 0,
+                ledning_kvinnor INTEGER DEFAULT 0,
+                ledning_man INTEGER DEFAULT 0,
+                inspirerade_barn_antal INTEGER DEFAULT 0,
+                utbildning_timmar_snitt REAL DEFAULT 0
+            )
+        """)
+        try:
+            conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN inspirerade_barn_antal INTEGER DEFAULT 0")
+            conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN utbildning_timmar_snitt REAL DEFAULT 0")
+        except: pass
+            
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Pendling_Beraknad (
+                berakning_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                uppdrag_id INTEGER,
+                antal_arbetsdagar REAL,
+                total_km REAL,
+                emissionsfaktor_kg_per_km REAL,
+                totalt_co2_kg REAL,
+                datakvalitet TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS system_config (key TEXT PRIMARY KEY, value TEXT, description TEXT)
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Vasentlighet (id INTEGER PRIMARY KEY AUTOINCREMENT, omrade TEXT, impact_score INTEGER, fin_score INTEGER, ar INTEGER)
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Governance_Inkop (ar INTEGER PRIMARY KEY, uppforandekod_pct INTEGER, visselblasare_antal INTEGER, gdpr_incidenter INTEGER, it_inkop_co2 REAL, lev_krav_pct INTEGER)
+        """)
 
-    # --- MISSING TABLES FOR SCOPE 1, 2 & 3 & REPORTS ---
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Drivmedel (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            datum TEXT,
-            volym_liter REAL,
-            drivmedelstyp TEXT,
-            co2_kg REAL,
-            kvitto_ref TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Energi (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ar INTEGER,
-            manad INTEGER,
-            anlaggning_id TEXT,
-            el_kwh REAL,
-            fjarrvarme_kwh REAL,
-            el_kalla TEXT,
-            scope2_location_based_kg REAL,
-            scope2_market_based_kg REAL
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS d_Personal (
-            person_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fornamn TEXT,
-            efternamn TEXT,
-            hem_postnummer TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS d_Kundsiter (
-            kund_plats_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            kund_namn TEXT,
-            postnummer TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Uppdrag (
-            uppdrag_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            person_id INTEGER,
-            kund_plats_id INTEGER,
-            startdatum TEXT,
-            slutdatum TEXT,
-            dagar_per_vecka REAL,
-            distans_km REAL,
-            fardmedel TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS d_Kontor (
-            kontor_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            namn TEXT,
-            aktiv INTEGER DEFAULT 1
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS f_Riskregister (
-            risk_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            beskrivning TEXT,
-            status TEXT DEFAULT 'Öppen'
-        )
-    """)
-    try:
-        conn.execute("INSERT INTO system_config (key, value, description) VALUES ('company_name', 'Företaget AB', 'Företagsnamn')")
-    except: pass
+        # --- MISSING TABLES FOR SCOPE 1, 2 & 3 & REPORTS ---
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Drivmedel (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                datum TEXT,
+                volym_liter REAL,
+                drivmedelstyp TEXT,
+                co2_kg REAL,
+                kvitto_ref TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Energi (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ar INTEGER,
+                manad INTEGER,
+                anlaggning_id TEXT,
+                el_kwh REAL,
+                fjarrvarme_kwh REAL,
+                el_kalla TEXT,
+                scope2_location_based_kg REAL,
+                scope2_market_based_kg REAL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS d_Personal (
+                person_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fornamn TEXT,
+                efternamn TEXT,
+                hem_postnummer TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS d_Kundsiter (
+                kund_plats_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                kund_namn TEXT,
+                postnummer TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Uppdrag (
+                uppdrag_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                person_id INTEGER,
+                kund_plats_id INTEGER,
+                startdatum TEXT,
+                slutdatum TEXT,
+                dagar_per_vecka REAL,
+                distans_km REAL,
+                fardmedel TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS d_Kontor (
+                kontor_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                namn TEXT,
+                aktiv INTEGER DEFAULT 1
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Riskregister (
+                risk_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                beskrivning TEXT,
+                status TEXT DEFAULT 'Öppen'
+            )
+        """)
+        try:
+            conn.execute("INSERT INTO system_config (key, value, description) VALUES ('company_name', 'Företaget AB', 'Företagsnamn')")
+        except: pass
 
+# Run DB initialization once
+init_db()
 
 # ============================================
 # CUSTOM SIDEBAR NAVIGATION
