@@ -501,15 +501,7 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     
-    # Settings (Compact columns)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.toggle("Prognos", value=True)
-    with c2:
-        is_dark = st.toggle("Mörkt", value=st.session_state['dark_mode'], key="theme_toggle")
-        if is_dark != st.session_state['dark_mode']:
-            st.session_state['dark_mode'] = is_dark
-            st.rerun()
+
 
 conn = get_connection()
 page = st.session_state.page
@@ -1016,11 +1008,30 @@ elif page == "Revisorvy":
 elif page == "Inställningar":
     st.title("Systeminställningar")
     
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "Företagsinformation",
         "Importera Data",
-        "Backup & Export"
+        "Backup & Export",
+        "Vy & Tema"
     ])
+    
+    with tab4:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Anpassa utseendet")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("### Tema")
+            is_dark = st.toggle("Mörkt läge", value=st.session_state['dark_mode'], key="theme_toggle_settings")
+            if is_dark != st.session_state['dark_mode']:
+                st.session_state['dark_mode'] = is_dark
+                st.rerun()
+                
+        with c2:
+            st.markdown("### Vy")
+            st.toggle("Visa prognoser i grafer", value=True)
+            
+        st.markdown('</div>', unsafe_allow_html=True)
     
     with tab1:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
