@@ -4,6 +4,7 @@ import sqlite3
 import os
 import time
 import plotly.express as px
+from datetime import datetime
 
 # Import local modules
 try:
@@ -266,7 +267,7 @@ def render_overview(conn):
     col2.metric("CO2 Scope 2", "4.2 ton", "-15%")
     col3.metric("CO2 Scope 3", "Calculating...", "Pending")
     try:
-        idx_data = index_generator.get_esrs_index(2024) # REMOVED CONN
+        idx_data = index_generator.get_esrs_index(2024) 
         score = index_generator.calculate_readiness_score(idx_data)
         col4.metric("CSRD Readiness", f"{score}%", "+5%")
     except: col4.metric("CSRD Readiness", "0%", "N/A")
@@ -297,7 +298,7 @@ def render_strategy(conn):
     
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.subheader("Dubbel Väsentlighetsanalys (DMA)")
-    dma_data = dma_tool.get_dma_data() # REMOVED CONN
+    dma_data = dma_tool.get_dma_data() 
     if not dma_data.empty:
         fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5])
         fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.3)")
@@ -390,7 +391,7 @@ def render_governance(conn):
         with st.form("add_pol"):
             name = st.text_input("Dokumentnamn")
             owner = st.text_input("Ägare")
-            date = date_input("Fastställd")
+            date = st.date_input("Fastställd")
             if st.form_submit_button("Spara"):
                 governance.add_policy(conn, name, "1.0", owner, date, "G1")
                 st.rerun()
@@ -477,7 +478,8 @@ def render_settings(conn):
     *   **Backup:** Ladda ner en kopia av hela databasen (rekommenderas före stora ändringar).
     """)
     
-    t1, t2, t3, t4 = st.tabs(["Info", "Import", "Backup", "Vy & Tema"])
+    t1, t2, t3, t4 = st.tabs(["Info", "Import", "Datahantering", "Vy & Tema"])
+    
     with t4:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
         st.subheader("Tema")
@@ -485,6 +487,54 @@ def render_settings(conn):
         if is_dark != st.session_state['dark_mode']:
             st.session_state['dark_mode'] = is_dark
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with t1:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        try:
+            config = pd.read_sql("SELECT * FROM system_config", conn)
+            for _, row in config.iterrows():
+                st.text_input(row['description'], value=row['value'], key=row['key'], disabled=True)
+            st.caption("Kontakta admin för att ändra systemparametrar.")
+        except: st.info("Ingen konfiguration hittades.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with t2:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Importera från Excel")
+        uploaded = st.file_uploader("Ladda upp HR-export", type=['xlsx', 'csv'])
+        if uploaded: st.info("Importfunktionen är inaktiverad i demoläge.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with t3:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("💾 Datahantering (Snapshot)")
+        st.info("Systemet nollställs vid omstart. Spara din data här för att kunna fortsätta senare.")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("#### 1. Spara arbete")
+            try:
+                with open(DB_PATH, "rb") as f:
+                    st.download_button(
+                        label="Ladda ner Systemfil (.db)",
+                        data=f,
+                        file_name=f"ESG_Data_{datetime.now().strftime('%Y-%m-%d')}.db",
+                        mime="application/octet-stream",
+                        type="primary"
+                    )
+            except: st.error("Kunde inte läsa databasen.")
+            
+        with c2:
+            st.markdown("#### 2. Återställ arbete")
+            uploaded_db = st.file_uploader("Släpp din .db fil här", type="db")
+            if uploaded_db:
+                if st.button("⚠️ Ersätt & Ladda om", type="secondary"):
+                    with open(DB_PATH, "wb") as f:
+                        f.write(uploaded_db.getbuffer())
+                    st.success("Återställd! Startar om...")
+                    time.sleep(1)
+                    st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================ 
@@ -503,7 +553,7 @@ with st.sidebar:
     border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
     text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
     st.markdown(f"<div style='background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center;'><div style='width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;'>J</div><div><div style='color: {text_col}; font-weight: 600; font-size: 13px;'>Jenny</div><div style='color: {theme['text_muted']}; font-size: 10px;'>System Admin</div></div></div><a href='?logout=1' target='_self' style='color: {theme['text_muted']}; text-decoration: none; padding: 5px;'><span style='font-size: 18px;'>⏻</span></a></div>", unsafe_allow_html=True)
-    st.caption("v6.0 Educational")
+    st.caption("v6.1 Final Build")
 
 conn = get_connection()
 if st.session_state.page == "Översikt": render_overview(conn)
