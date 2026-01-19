@@ -36,7 +36,7 @@ def check_password():
 
     def password_entered():
         """Checks whether a password entered by the user is correct."""
-        if st.session_state["username"] == "admin" and st.session_state["password"] == "SkillESG2026!":
+        if st.session_state["username"] == "admin" and st.session_state["password"] == "AdminESG2026!":
             st.session_state["password_correct"] = True
             del st.session_state["password"]  # Don't store password
             del st.session_state["username"]
@@ -346,7 +346,7 @@ def init_db():
                 disclosure_requirement TEXT,
                 description TEXT,
                 mandatory INTEGER DEFAULT 1,
-                applies_to_skill INTEGER DEFAULT 1
+                applies_to_company INTEGER DEFAULT 1
             )
         """)
 
