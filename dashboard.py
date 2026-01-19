@@ -147,6 +147,14 @@ css = """
         color: var(--text-main);
     }
 
+    /* Active button highlight */
+    [data-testid="stSidebar"] div.stButton > button[kind="primary"] {
+        background-color: rgba(0, 229, 255, 0.15) !important;
+        color: #00E5FF !important;
+        border-left: 4px solid #00E5FF !important;
+        border-radius: 4px 12px 12px 4px !important;
+    }
+
     .css-card {
         background-color: var(--bg-card);
         backdrop-filter: blur(12px);
