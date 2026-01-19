@@ -581,7 +581,6 @@ with st.sidebar:
     border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
     text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
     st.markdown(f"<div style='background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center;'><div style='width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;'>J</div><div><div style='color: {text_col}; font-weight: 600; font-size: 13px;'>Jenny</div><div style='color: {theme['text_muted']}; font-size: 10px;'>System Admin</div></div></div><a href='?logout=1' target='_self' style='color: {theme['text_muted']}; text-decoration: none; padding: 5px;'><span style='font-size: 18px;'>⏻</span></a></div>", unsafe_allow_html=True)
-    st.caption("v7.0 Spend Detail Analysis")
 
 conn = get_connection()
 if st.session_state.page == "Översikt": render_overview(conn)
