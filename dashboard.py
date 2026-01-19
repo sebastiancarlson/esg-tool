@@ -536,19 +536,22 @@ with st.sidebar:
             
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # Premium Profile Card
-    card_bg = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
-    text_color = "white" if st.session_state['dark_mode'] else "#171717"
+    # Simplified Profile Card
+    if st.session_state['dark_mode']:
+        card_bg, card_border, text_main, text_muted = "#161b22", "#30363d", "#FFFFFF", "#8b949e"
+    else:
+        card_bg, card_border, text_main, text_muted = "#f6f8fa", "#d0d7de", "#171717", "#57606a"
+        
     st.markdown(f"""
-        <div style="background-color: {card_bg}; border-radius: 16px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <div style="background-color: {card_bg}; border: 1px solid {card_border}; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center;">
-                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #2962FF, #00E5FF); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 12px; font-size: 16px;">J</div>
+                <div style="width: 32px; height: 32px; background-color: #2962FF; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 10px; font-size: 14px;">J</div>
                 <div>
-                    <div style="color: {text_color}; font-weight: 700; font-size: 14px;">J.M.</div>
-                    <div style="color: #00E5FF; font-size: 10px; font-weight: 600; text-transform: uppercase;">Administrator</div>
+                    <div style="color: {text_main}; font-weight: 600; font-size: 13px; line-height: 1.2;">J.M.</div>
+                    <div style="color: #00E5FF; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Administrator</div>
                 </div>
             </div>
-            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 18px; padding: 5px; border-radius: 8px; background: rgba(255,75,75,0.1); display: flex; align-items: center; justify-content: center; transition: 0.3s;">⏻</a>
+            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 11px; font-weight: 600; padding: 4px 8px; border: 1px solid #FF4B4B; border-radius: 4px; text-transform: uppercase;">Logga ut</a>
         </div>
     """, unsafe_allow_html=True)
 
