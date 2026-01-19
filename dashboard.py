@@ -244,7 +244,22 @@ if 'page' not in st.session_state: st.session_state.page = "Översikt"
 def render_overview(conn):
     st.markdown('<h1 style="font-size: 3rem;">ESG <span class="gradient-text">Evidence Engine</span></h1>', unsafe_allow_html=True)
     st.markdown("Centraliserad plattform för hållbarhetsdata, rapportering och analys.", unsafe_allow_html=True)
-    show_page_help("**Välkommen till din ESG-cockpit!** Här får du en snabb överblick över bolagets hållbarhetsprestanda.")
+    
+    show_page_help("""
+    ### 👋 Välkommen till ESG Evidence Engine
+    
+    Denna instrumentpanel ger dig en realtidsbild av bolagets hållbarhetsprestanda och efterlevnad av EU-direktivet CSRD.
+    
+    #### 📊 KPI-Förklaring
+    *   **CO2 Scope 1:** Direkta utsläpp från källor ni äger (t.ex. tjänstebilar).
+    *   **CO2 Scope 2:** Indirekta utsläpp från inköpt energi (el, fjärrvärme).
+    *   **CO2 Scope 3:** Utsläpp i värdekedjan (pendling, inköp, tjänster). Ofta 80-90% av totalen.
+    *   **CSRD Readiness:** Ett beräknat betyg (0-100%) på hur många av de obligatoriska datapunkterna i ESRS som är ifyllda i systemet.
+    
+    #### 🎯 Syfte
+    Att snabbt identifiera dataluckor och följa trenden mot Net Zero och Compliance.
+    """)
+    
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("CO2 Scope 1", "12.5 ton", "-2%")
@@ -265,7 +280,21 @@ def render_overview(conn):
 @st.fragment
 def render_strategy(conn):
     st.title("Strategi & Väsentlighet")
-    show_page_help("Enligt **CSRD (ESRS 2)** måste alla bolag genomföra en **Dubbel Väsentlighetsanalys (DMA)**.")
+    
+    show_page_help("""
+    ### 🧭 Dubbel Väsentlighetsanalys (DMA)
+    
+    Enligt CSRD (ESRS 2) räcker det inte att bara rapportera det man "känner för". Man måste vetenskapligt bedöma vad som är väsentligt.
+    
+    #### 🛠 Gör så här:
+    1.  **Ämne:** Ange ett hållbarhetsområde (t.ex. "Klimat", "Arbetsmiljö", "Anti-korruption").
+    2.  **Impact (Påverkan):** Bedöm er påverkan på människa/miljö. (1=Försumbar, 5=Allvarlig/Irreversibel).
+    3.  **Finansiell Risk:** Bedöm risken för bolagets ekonomi. (1=Försumbar, 5=Hotar affärsmodellen).
+    
+    #### 📈 Resultat & Mätning
+    Systemet skapar en matris. Ämnen med **poäng ≥ 3** på *någon* axel klassas som **Väsentliga**. Dessa hamnar automatiskt i ESRS-indexet och *måste* rapporteras.
+    """)
+    
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.subheader("Dubbel Väsentlighetsanalys (DMA)")
     dma_data = dma_tool.get_dma_data() # REMOVED CONN
@@ -291,7 +320,23 @@ def render_strategy(conn):
 @st.fragment
 def render_hr(conn):
     st.title("HR & Social Hållbarhet")
-    show_page_help("Här samlar ni in social data uppdelad enligt **ESRS S1 (Egen personal)** och **S2 (Värdekedjan)**.")
+    
+    show_page_help("""
+    ### 👥 Social Hållbarhet (S1 & S2)
+    
+    CSRD kräver att vi skiljer på personer vi har direkt juridiskt ansvar för och de som arbetar i vår värdekedja.
+    
+    #### 1. S1: Egen Personal (Own Workforce)
+    *   **Vem:** Personer med anställningsavtal och löneutbetalning från er.
+    *   **Mätetal:** Sjukfrånvaro (%), Olycksfall (antal), Utbildning (timmar/år) och Gender Pay Gap (okorrigerat).
+    *   **Syfte:** Säkerställa en trygg och jämställd arbetsplats.
+    
+    #### 2. S2: Arbetstagare i värdekedjan (Workers in Value Chain)
+    *   **Vem:** Konsulter, underkonsulter och gig-arbetare.
+    *   **Mätetal:** Antal (FTE), Arbetsmiljöincidenter hos kund.
+    *   **Syfte:** Ta ansvar även för de som bidrar till värdeskapandet utan att vara anställda.
+    """)
+    
     tab_s1, tab_s2, tab_hist = st.tabs(["👥 S1: Egen Personal", "🚜 S2: Konsulter", "📈 Historik"])
     with tab_s1:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -322,7 +367,21 @@ def render_hr(conn):
 @st.fragment
 def render_governance(conn):
     st.title("Governance & Leverantörskedja")
-    show_page_help("**G1 (Business Conduct)** kräver ordning på styrdokument.")
+    
+    show_page_help("""
+    ### ⚖️ Styrning & Kontroll (G1)
+    
+    Governance handlar om "ordning och reda". För att vara compliant måste styrdokument vara uppdaterade och implementerade.
+    
+    #### 📚 Policy-bibliotek
+    *   **Funktion:** Ladda upp namn och datum för styrdokument (t.ex. Uppförandekod, Visselblåsarpolicy).
+    *   **Logik:** Systemet räknar automatiskt ut **Nästa Översyn** (1 år från fastställande).
+    *   **Varningar:** 
+        *   🟢 Grön: Giltig.
+        *   🟡 Gul: Dags att se över (<90 dagar kvar).
+        *   🔴 Röd: Utgången (Risk för non-compliance).
+    """)
+    
     tab_pol, tab_kpi = st.tabs(["📚 Policys", "📊 KPI"])
     with tab_pol:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -331,7 +390,7 @@ def render_governance(conn):
         with st.form("add_pol"):
             name = st.text_input("Dokumentnamn")
             owner = st.text_input("Ägare")
-            date = st.date_input("Fastställd")
+            date = date_input("Fastställd")
             if st.form_submit_button("Spara"):
                 governance.add_policy(conn, name, "1.0", owner, date, "G1")
                 st.rerun()
@@ -340,7 +399,23 @@ def render_governance(conn):
 @st.fragment
 def render_calc(conn):
     st.title("Automatiska Beräkningar")
-    show_page_help("Beräkna **Scope 3** (Pendling & Inköp).")
+    
+    show_page_help("""
+    ### 🧮 Klimatberäkningar (Scope 3)
+    
+    Att mäta värdekedjans utsläpp är komplext. Vi använder två metoder:
+    
+    #### 1. Spend-analys (Inköp)
+    *   **När:** För varor och tjänster där vi saknar exakt data (t.ex. IT-konsulter, kontorsmaterial).
+    *   **Hur:** Vi multiplicerar kostnaden (SEK) med en **Emissionsfaktor** (kg CO2e/SEK) baserad på branschsnitt (SCB/Exiobase).
+    *   **Exempel:** 100 000 kr på IT-hårdvara -> ca 4.5 ton CO2e.
+    
+    #### 2. Aktivitetsdata (Pendling)
+    *   **När:** När vi vet fysiska avstånd.
+    *   **Hur:** (Distans km × 2) × Arbetsdagar × Fordonets utsläppsfaktor.
+    *   **Resultat:** Ett mer precist värde än spend-analys.
+    """)
+    
     t1, t2, t3 = st.tabs(["Pendling", "Inköp (Spend)", "Uppdatera"])
     with t2:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -360,7 +435,22 @@ def render_calc(conn):
 @st.fragment
 def render_reports(conn):
     st.title("Generera Rapporter")
-    show_page_help("Exportera CSRD-rapporter och Excel-underlag.")
+    
+    show_page_help("""
+    ### 📑 Export & Rapportering
+    
+    Här tar du ut datan för extern granskning.
+    
+    #### 1. CSRD-rapport (PDF)
+    *   **Vad:** En textrapport strukturerad enligt ESRS E1, S1 och G1.
+    *   **Innehåll:** Automatiskt genererad text baserad på era KPI:er och DMA-analys.
+    *   **Användning:** Underlag för årsredovisning eller hållbarhetsrapport.
+    
+    #### 2. ESRS Index
+    *   **Vad:** En tabell som mappar varje krav (t.ex. E1-6) mot er data.
+    *   **Användning:** "Fusklapp" för revisorn för att snabbt se om ni uppfyller kraven (Gap-analys).
+    """)
+    
     t1, t2 = st.tabs(["CSRD", "Index"])
     with t1:
         if st.button("Ladda ner PDF"):
@@ -370,12 +460,23 @@ def render_reports(conn):
 @st.fragment
 def render_audit(conn):
     st.title("Audit Trail")
-    show_page_help("Endast för granskning.")
+    show_page_help("""
+    **Endast för granskning.** Här kan en revisor dyka ner i enskilda datapunkter (t.ex. en specifik pendlingsberäkning) för att verifiera källan och beräkningsmetoden.
+    """)
     st.info("Här visas transaktionsloggar.")
 
 @st.fragment
 def render_settings(conn):
     st.title("Inställningar")
+    
+    show_page_help("""
+    Konfigurera systemet för er organisation.
+    
+    *   **Företagsinfo:** Namn och grunddata.
+    *   **Import:** Ladda upp Excel-filer för att slippa manuell inmatning.
+    *   **Backup:** Ladda ner en kopia av hela databasen (rekommenderas före stora ändringar).
+    """)
+    
     t1, t2, t3, t4 = st.tabs(["Info", "Import", "Backup", "Vy & Tema"])
     with t4:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -386,7 +487,9 @@ def render_settings(conn):
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ... (Sidebar same as before) ...
+# ============================================ 
+# 5. SIDEBAR & ROUTING
+# ============================================ 
 with st.sidebar:
     st.markdown("<div style='text-align: center; padding: 10px 0 25px 0;'><h1 style='margin: 0; font-weight: 800; letter-spacing: 4px; color: VAR_TEXT; font-size: 2.5rem;'>ESG</h1><div style='height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;'></div><p style='margin: 0; color: #00E5FF; font-family: Inter, sans-serif; font-weight: 300; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase;'>Hållbarhetsindex</p></div>".replace("VAR_TEXT", theme['text_main']), unsafe_allow_html=True)
     st.markdown("---")
@@ -400,7 +503,7 @@ with st.sidebar:
     border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
     text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
     st.markdown(f"<div style='background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center;'><div style='width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;'>J</div><div><div style='color: {text_col}; font-weight: 600; font-size: 13px;'>Jenny</div><div style='color: {theme['text_muted']}; font-size: 10px;'>System Admin</div></div></div><a href='?logout=1' target='_self' style='color: {theme['text_muted']}; text-decoration: none; padding: 5px;'><span style='font-size: 18px;'>⏻</span></a></div>", unsafe_allow_html=True)
-    st.caption("v5.6 Final Fix")
+    st.caption("v6.0 Educational")
 
 conn = get_connection()
 if st.session_state.page == "Översikt": render_overview(conn)
