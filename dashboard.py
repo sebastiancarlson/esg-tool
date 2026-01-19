@@ -6,13 +6,13 @@ import time
 
 # Import local modules
 try:
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance
     from modules import report_csrd, export_excel
 except ImportError:
     # Fallback if running from inside reference-code without package structure
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance
     from modules import report_csrd, export_excel
 
 
@@ -345,7 +345,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
-    st.caption("v3.0 Scope 3 Spend")
+    st.caption("v3.1 Governance")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
@@ -498,37 +498,91 @@ elif page == "HR-Data":
 elif page == "Governance":
     st.title("Governance & Leverantörskedja")
     
-    st.markdown('<div class="css-card">', unsafe_allow_html=True)
-    st.subheader("Styrning & EcoVadis-krav")
-    st.markdown("Hantera policyefterlevnad och leverantörskontroll.")
+    tab_policy, tab_kpi = st.tabs(["📚 Policy-bibliotek", "📊 KPI & Inköp"])
     
-    with st.form("gov_form"):
-        ar_gov = st.number_input("År", value=2024, step=1)
-        col1, col2 = st.columns(2)
+    # --- FLIK 1: POLICY MANAGER ---
+    with tab_policy:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Styrdokument (G1)")
+        st.info("Håll ordning på policys och revisionsdatum för att möta CSRD-krav.")
         
-        with col1:
-            st.markdown("### 📜 Etik & Policy")
-            uppforandekod = st.slider("% Anställda som signerat Uppförandekod", 0, 100, 95)
-            visselblasare = st.number_input("Antal visselblåsarärenden", min_value=0)
-            gdpr = st.number_input("Antal GDPR-incidenter", min_value=0)
+        # Visa tabell
+        policies = governance.get_policies(conn)
+        if not policies.empty:
+            # Visa snyggare tabell
+            display_cols = ['Status', 'policy_name', 'document_version', 'owner', 'next_review_date', 'esrs_requirement']
+            st.dataframe(
+                policies[display_cols], 
+                column_config={
+                    "next_review_date": st.column_config.DateColumn("Nästa översyn"),
+                    "policy_name": "Dokument",
+                    "esrs_requirement": "Koppling (ESRS)"
+                },
+                hide_index=True,
+                use_container_width=True
+            )
+            
+            # Delete knapp (enkel implementation)
+            with st.expander("Hantera/Ta bort policy"):
+                p_id = st.selectbox("Välj dokument att ta bort", policies['id'], format_func=lambda x: policies[policies['id']==x]['policy_name'].values[0])
+                if st.button("Ta bort markerad"):
+                    governance.delete_policy(conn, p_id)
+                    st.rerun()
+        else:
+            st.info("Inga policys registrerade än.")
 
-        with col2:
-            st.markdown("### 🚚 Hållbara Inköp")
-            it_inkop_co2 = st.number_input("Estimerat CO2 inköp IT (ton)", min_value=0.0)
-            lev_krav = st.slider("% Lev. som signerat CoC (Code of Conduct)", 0, 100, 50)
+        st.markdown("---")
+        st.markdown("### Lägg till nytt dokument")
         
-        if st.form_submit_button("Spara Governance-data"):
-            try:
-                conn.execute("""
-                    INSERT OR REPLACE INTO f_Governance_Inkop 
-                    (ar, uppforandekod_pct, visselblasare_antal, gdpr_incidenter, it_inkop_co2, lev_krav_pct)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (ar_gov, uppforandekod, visselblasare, gdpr, it_inkop_co2, lev_krav))
-                conn.commit()
-                st.success("✅ Governance-data sparad!")
-            except Exception as e:
-                st.error(f"Fel vid sparning: {e}")
-    st.markdown('</div>', unsafe_allow_html=True)
+        with st.form("add_policy_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                p_name = st.text_input("Dokumentnamn", placeholder="t.ex. Uppförandekod")
+                p_ver = st.text_input("Version", value="1.0")
+                p_owner = st.text_input("Ägare (Roll)", placeholder="t.ex. HR-chef")
+            with c2:
+                p_date = st.date_input("Senast fastställd")
+                p_esrs = st.selectbox("Koppling till ESRS", ["G1 (Business Conduct)", "S1 (Own Workforce)", "S2 (Value Chain)", "E1 (Climate)"])
+            
+            if st.form_submit_button("Spara till bibliotek"):
+                governance.add_policy(conn, p_name, p_ver, p_owner, p_date, p_esrs)
+                st.success("Dokument sparat!")
+                st.rerun()
+                
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- FLIK 2: KPI & INKÖP (Gamla vyn) ---
+    with tab_kpi:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Nyckeltal & Leverantörskontroll")
+        
+        with st.form("gov_form"):
+            ar_gov = st.number_input("År", value=2024, step=1)
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("### 📜 Etik & Policy")
+                uppforandekod = st.slider("% Anställda som signerat Uppförandekod", 0, 100, 95)
+                visselblasare = st.number_input("Antal visselblåsarärenden", min_value=0)
+                gdpr = st.number_input("Antal GDPR-incidenter", min_value=0)
+
+            with col2:
+                st.markdown("### 🚚 Hållbara Inköp")
+                it_inkop_co2 = st.number_input("Estimerat CO2 inköp IT (ton)", min_value=0.0, help="Manuellt värde. Använd Scope 3-kalkylatorn för detaljer.")
+                lev_krav = st.slider("% Lev. som signerat CoC (Code of Conduct)", 0, 100, 50)
+            
+            if st.form_submit_button("Spara KPI:er"):
+                try:
+                    conn.execute("""
+                        INSERT OR REPLACE INTO f_Governance_Inkop 
+                        (ar, uppforandekod_pct, visselblasare_antal, gdpr_incidenter, it_inkop_co2, lev_krav_pct)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (ar_gov, uppforandekod, visselblasare, gdpr, it_inkop_co2, lev_krav))
+                    conn.commit()
+                    st.success("✅ KPI:er sparade!")
+                except Exception as e:
+                    st.error(f"Fel vid sparning: {e}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================================
