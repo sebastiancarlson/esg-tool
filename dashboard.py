@@ -220,7 +220,7 @@ if 'page' not in st.session_state: st.session_state.page = "Översikt"
 @st.fragment
 def render_overview():
     st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
-    show_page_help("Översikt", "Här visas bolagets totala klimatavtryck baserat på registrerad data.")
+    show_page_help("Översikt", "Här visas företagets totala klimatavtryck baserat på registrerad data.")
     
     with get_connection() as conn:
         s1 = pd.read_sql("SELECT SUM(co2_kg)/1000.0 as ton FROM f_Drivmedel", conn).iloc[0,0] or 0.0
@@ -389,7 +389,7 @@ with st.sidebar:
             <div style="display: flex; align-items: center;">
                 <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #2962FF, #00E5FF); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 12px; font-size: 16px;">J</div>
                 <div>
-                    <div style="color: {text_color}; font-weight: 700; font-size: 14px;">Jenny</div>
+                    <div style="color: {text_color}; font-weight: 700; font-size: 14px;">J.M.</div>
                     <div style="color: #00E5FF; font-size: 10px; font-weight: 600; text-transform: uppercase;">Administrator</div>
                 </div>
             </div>
