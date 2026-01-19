@@ -17,6 +17,13 @@ EMISSION_FACTORS = {
     'Konsulttjänster (Management/HR)': 0.003,
     'Möbler & Inredning': 0.035,
     'Städtjänster & Facility': 0.010,
+    'Resor (Tåg/Flyg/Hotell)': 0.020,
+    'Livsmedel: Kaffe/Te': 0.040,
+    'Livsmedel: Mjölk/Mejeri': 0.030,
+    'Livsmedel: Frukt/Grönt': 0.010,
+    'Livsmedel: Bröd/Kakor': 0.015,
+    'Livsmedel: Kött/Chark': 0.060,
+    'Livsmedel: Måltider/Catering': 0.025,
     'Övrigt': 0.010
 }
 
@@ -26,9 +33,17 @@ def calculate_co2_from_spend(category, spend_sek):
     factor = EMISSION_FACTORS.get(category, 0.010)
     return (spend_sek * factor) / 1000.0, factor
 
-def add_spend_item(conn, category, subcategory, spend_sek, period, quality='Estimated'):
+def add_spend_item(conn, category, subcategory, product_name, spend_sek, period, quality='Estimated'):
     co2, factor = calculate_co2_from_spend(category, spend_sek)
-    conn.execute("INSERT INTO f_Scope3_Calculations (category, subcategory, spend_sek, emission_factor, co2e_tonnes, data_quality, reporting_period, created_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (category, subcategory, spend_sek, factor, co2, quality, period, datetime.now().strftime('%Y-%m-%d')))
+    try:
+        conn.execute("ALTER TABLE f_Scope3_Calculations ADD COLUMN product_name TEXT")
+    except: pass
+    
+    conn.execute("""
+        INSERT INTO f_Scope3_Calculations 
+        (category, subcategory, product_name, spend_sek, emission_factor, co2e_tonnes, data_quality, reporting_period, created_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (category, subcategory, product_name, spend_sek, factor, co2, quality, period, datetime.now().strftime('%Y-%m-%d')))
     conn.commit()
     st.cache_data.clear()
     return co2
@@ -44,3 +59,16 @@ def get_all_items(period=None):
 def get_spend_summary(period):
     with get_conn() as conn:
         return pd.read_sql(f"SELECT category, SUM(spend_sek) as total_sek, SUM(co2e_tonnes) as total_co2 FROM f_Scope3_Calculations WHERE reporting_period = '{period}' GROUP BY category", conn)
+
+@st.cache_data(ttl=600)
+def get_product_breakdown(period):
+    with get_conn() as conn:
+        try:
+            return pd.read_sql(f"""
+                SELECT product_name, category, SUM(co2e_tonnes) as co2 
+                FROM f_Scope3_Calculations 
+                WHERE reporting_period = '{period}' AND product_name IS NOT NULL AND product_name != ''
+                GROUP BY product_name, category
+                ORDER BY co2 DESC
+            """, conn)
+        except: return pd.DataFrame()

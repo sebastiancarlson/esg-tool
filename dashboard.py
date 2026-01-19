@@ -202,6 +202,7 @@ def get_connection(): return sqlite3.connect(DB_PATH)
 @st.cache_resource
 def init_db():
     with get_connection() as conn:
+        # Table list
         tables = [
             "CREATE TABLE IF NOT EXISTS f_HR_Arsdata (ar INTEGER PRIMARY KEY, enps_intern INTEGER, cnps_konsult INTEGER, antal_interna INTEGER, antal_konsulter INTEGER, nyanstallda_ar INTEGER, sjukfranvaro_procent REAL, arbetsolyckor_antal INTEGER, allvarliga_olyckor INTEGER DEFAULT 0, ledning_kvinnor INTEGER DEFAULT 0, ledning_man INTEGER DEFAULT 0, inspirerade_barn_antal INTEGER DEFAULT 0, utbildning_timmar_snitt REAL DEFAULT 0, employee_category TEXT, gender_pay_gap_pct REAL)",
             "CREATE TABLE IF NOT EXISTS f_Pendling_Beraknad (berakning_id INTEGER PRIMARY KEY AUTOINCREMENT, uppdrag_id INTEGER, antal_arbetsdagar REAL, total_km REAL, emissionsfaktor_kg_per_km REAL, totalt_co2_kg REAL, datakvalitet TEXT)",
@@ -209,7 +210,7 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_Vasentlighet (id INTEGER PRIMARY KEY AUTOINCREMENT, omrade TEXT, impact_score INTEGER, fin_score INTEGER, ar INTEGER)",
             "CREATE TABLE IF NOT EXISTS f_Governance_Inkop (ar INTEGER PRIMARY KEY, uppforandekod_pct INTEGER, visselblasare_antal INTEGER, gdpr_incidenter INTEGER, it_inkop_co2 REAL, lev_krav_pct INTEGER)",
             "CREATE TABLE IF NOT EXISTS f_DMA_Materiality (id INTEGER PRIMARY KEY AUTOINCREMENT, topic TEXT NOT NULL, impact_score INTEGER, financial_score INTEGER, esrs_code TEXT, category TEXT, stakeholder_input TEXT, created_date TEXT, last_updated TEXT, is_material INTEGER DEFAULT 0)",
-            "CREATE TABLE IF NOT EXISTS f_Scope3_Calculations (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, subcategory TEXT, spend_sek REAL, emission_factor REAL, co2e_tonnes REAL, data_quality TEXT, reporting_period TEXT, source_document TEXT, created_date TEXT)",
+            "CREATE TABLE IF NOT EXISTS f_Scope3_Calculations (id INTEGER PRIMARY KEY AUTOINCREMENT, category TEXT, subcategory TEXT, product_name TEXT, spend_sek REAL, emission_factor REAL, co2e_tonnes REAL, data_quality TEXT, reporting_period TEXT, source_document TEXT, created_date TEXT)", 
             "CREATE TABLE IF NOT EXISTS f_Governance_Policies (id INTEGER PRIMARY KEY AUTOINCREMENT, policy_name TEXT UNIQUE, document_version TEXT, owner TEXT, last_updated DATE, next_review_date DATE, is_implemented INTEGER DEFAULT 0, document_link TEXT, esrs_requirement TEXT, notes TEXT)",
             "CREATE TABLE IF NOT EXISTS f_Social_Metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, metric_type TEXT, value REAL, period TEXT, data_source TEXT, employee_category TEXT)",
             "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)",
@@ -223,6 +224,9 @@ def init_db():
         ]
         for sql in tables: conn.execute(sql)
         try: conn.execute("INSERT INTO system_config (key, value, description) VALUES ('company_name', 'Företaget AB', 'Företagsnamn')")
+        except: pass
+        try: 
+            conn.execute("ALTER TABLE f_Scope3_Calculations ADD COLUMN product_name TEXT")
         except: pass
         try: 
             if conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0] == 0:
@@ -417,20 +421,44 @@ def render_calc(conn):
     *   **Resultat:** Ett mer precist värde än spend-analys.
     """)
     
-    t1, t2, t3 = st.tabs(["Pendling", "Inköp (Spend)", "Uppdatera"])
+    t1, t2, t3, t4 = st.tabs(["Pendling", "Inköp (Spend)", "🔍 Detaljanalys", "Uppdatera"])
     with t2:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
         c1, c2 = st.columns([1,2])
         with c1:
             with st.form("spend"):
                 cat = st.selectbox("Kategori", scope3_spend.get_categories())
+                sub = st.text_input("Underkategori", placeholder="T.ex. Fruktkorg")
+                prod = st.text_input("Produkt/Leverantör", placeholder="T.ex. Mathem") 
                 sek = st.number_input("SEK", 0.0)
+                ar = st.selectbox("År", ["2024", "2025"], key="spend_year")
                 if st.form_submit_button("Lägg till"):
-                    scope3_spend.add_spend_item(conn, cat, "", sek, "2024")
+                    scope3_spend.add_spend_item(conn, cat, sub, prod, sek, ar) 
                     st.success("Sparat!")
         with c2:
-            summ = scope3_spend.get_spend_summary("2024") # REMOVED CONN
+            summ = scope3_spend.get_spend_summary(ar) # REMOVED CONN
             if not summ.empty: st.dataframe(summ, hide_index=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with t3: # Detail Analysis
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Djupdykning: Produkter & Leverantörer")
+        ar_det = st.selectbox("Välj år", ["2024", "2025"], key="det_year")
+        
+        details = scope3_spend.get_product_breakdown(ar_det) 
+        
+        if not details.empty:
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("##### Topp 5 Utsläppskällor")
+                fig = px.pie(details.head(10), values='co2', names='product_name', title='Fördelning per Produkt', hole=0.4)
+                fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black")
+                st.plotly_chart(fig, use_container_width=True)
+            with c2:
+                st.markdown("##### Detaljerad Lista")
+                st.dataframe(details, hide_index=True, use_container_width=True)
+        else:
+            st.info("Ingen produktspecifik data inmatad än.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 @st.fragment
@@ -553,7 +581,7 @@ with st.sidebar:
     border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
     text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
     st.markdown(f"<div style='background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center;'><div style='width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;'>J</div><div><div style='color: {text_col}; font-weight: 600; font-size: 13px;'>Jenny</div><div style='color: {theme['text_muted']}; font-size: 10px;'>System Admin</div></div></div><a href='?logout=1' target='_self' style='color: {theme['text_muted']}; text-decoration: none; padding: 5px;'><span style='font-size: 18px;'>⏻</span></a></div>", unsafe_allow_html=True)
-    st.caption("v6.1 Final Build")
+    st.caption("v7.0 Spend Detail Analysis")
 
 conn = get_connection()
 if st.session_state.page == "Översikt": render_overview(conn)
