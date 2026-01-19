@@ -75,6 +75,10 @@ st.markdown("""
 
     /* --- BUTTONS IN SIDEBAR --- */
     /* --- SIDEBAR BUTTONS (Navigation) --- */
+    [data-testid="stSidebar"] div.stButton {
+        margin-bottom: -15px !important; /* Reduce vertical gap */
+    }
+
     [data-testid="stSidebar"] div.stButton > button {
         width: 100% !important;
         text-align: left !important;
@@ -387,13 +391,26 @@ with st.sidebar:
                 st.rerun()
 
     st.markdown("---")
-    st.markdown("### 👤 Profil")
-    st.markdown("**Jenny** (Admin)")
-    st.caption("v4.0 Master Plan Complete")
     
-    st.markdown("### ⚙️ Vy")
-    st.checkbox("Visa prognoser", value=True)
-    st.checkbox("Dark Mode", value=True, disabled=True)
+    # Compact Profile Card
+    st.markdown("""
+        <div style="background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <div style="display: flex; align-items: center;">
+                <div style="width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px; box-shadow: 0 2px 8px rgba(0, 229, 255, 0.2);">J</div>
+                <div>
+                    <div style="color: white; font-weight: 600; font-size: 13px;">Jenny Svensson</div>
+                    <div style="color: #B0B8C6; font-size: 10px;">System Admin</div>
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Settings (Compact columns)
+    c1, c2 = st.columns(2)
+    with c1:
+        st.toggle("Prognos", value=True)
+    with c2:
+        st.toggle("Mörkt", value=True, disabled=True)
 
 conn = get_connection()
 page = st.session_state.page
