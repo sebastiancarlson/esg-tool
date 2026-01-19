@@ -15,9 +15,9 @@ except ImportError:
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
 
-# ============================================ 
+# ============================================
 # 1. CONFIG & AUTH
-# ============================================ 
+# ============================================
 st.set_page_config(page_title="ESG Hållbarhetsindex", page_icon="🌱", layout="wide", initial_sidebar_state="expanded")
 
 if st.query_params.get("logout") == "1":
@@ -35,7 +35,7 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        st.markdown("<style>.stApp {background-color: #0A0E17; background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);} .auth-container {max-width: 400px; margin: 100px auto; padding: 40px; background: rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); text-align: center;} h1 { color: white; margin-bottom: 30px; font-weight: 300; }</style>", unsafe_allow_html=True)
+        st.markdown("""<style>.stApp {background-color: #0A0E17; background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);} .auth-container {max-width: 400px; margin: 100px auto; padding: 40px; background: rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); text-align: center;} h1 { color: white; margin-bottom: 30px; font-weight: 300; }</style>""", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col2:
             st.markdown("<br><br><br>", unsafe_allow_html=True)
@@ -53,9 +53,9 @@ def check_password():
 if not check_password():
     st.stop()
 
-# ============================================ 
-# 2. THEME & STYLING
-# ============================================ 
+# ============================================
+# 2. THEME & STYLING (SAFE MODE)
+# ============================================
 if 'dark_mode' not in st.session_state:
     st.session_state['dark_mode'] = True
 
@@ -71,30 +71,128 @@ theme = {
     'input_bg': 'rgba(255,255,255,0.05)' if st.session_state['dark_mode'] else '#F8FAFC'
 }
 
-st.markdown(f"""
+css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    :root {{ --esg-blue-primary: #2962FF; --esg-cyan: #00E5FF; --bg-dark: {theme['bg']}; --bg-card: {theme['card_bg']}; --text-main: {theme['text_main']}; --text-muted: {theme['text_muted']}; }}
-    html, body, [class*="css"], [data-testid="stAppViewContainer"] {{ font-family: 'Inter', sans-serif; color: var(--text-main) !important; background-color: var(--bg-dark) !important; }}
-    .stApp {{ background-color: var(--bg-dark); background-image: {theme['bg_gradient']}; background-attachment: fixed; }}
-    [data-testid="stSidebar"] {{ background-color: {theme['sidebar_bg']} !important; border-right: 1px solid {theme['card_border']}; }}
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {{ color: var(--text-main) !important; }}
-    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {{ color: var(--text-main) !important; }}
-    [data-testid="stSidebar"] div.stButton {{ margin-bottom: -15px !important; }}
-    [data-testid="stSidebar"] div.stButton > button {{ width: 100% !important; text-align: left !important; justify-content: flex-start !important; display: flex !important; border: none; background-color: transparent; color: var(--text-muted); padding: 12px 20px !important; font-size: 16px; transition: all 0.3s ease; border-radius: 8px; margin-bottom: 5px; align-items: center; }}
-    [data-testid="stSidebar"] div.stButton > button > div {{ justify-content: flex-start !important; text-align: left !important; }}
-    div.stButton > button:hover {{ background-color: rgba(125, 125, 125, 0.1); color: var(--text-main); transform: translateX(5px); }}
-    div.stButton > button:focus {{ border: none; outline: none; color: var(--text-main); }}
-    .css-card {{ background-color: {theme['card_bg']}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid {theme['card_border']}; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: {theme['shadow']}; }}
-    .css-card h3 {{ color: var(--text-main) !important; font-weight: 700; margin-bottom: 1rem; }}
-    .stTextInput input, .stNumberInput input, .stSelectbox div, .stDateInput div {{ background-color: {theme['input_bg']} !important; color: var(--text-main) !important; border-color: {theme['card_border']} !important; }}
-    .gradient-text {{ background: linear-gradient(90deg, {theme['text_main']} 0%, #00E5FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }}
-</style>
-", unsafe_allow_html=True)
+    
+    :root {
+        --esg-blue-primary: #2962FF;  
+        --esg-cyan: #00E5FF;          
+        --bg-dark: VAR_BG;
+        --bg-card: VAR_CARD_BG;             
+        --text-main: VAR_TEXT_MAIN;
+        --text-muted: VAR_TEXT_MUTED;
+    }
 
-# ============================================ 
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main) !important;
+        background-color: var(--bg-dark) !important;
+    }
+    
+    .stApp {
+        background-color: var(--bg-dark);
+        background-image: VAR_GRADIENT;
+        background-attachment: fixed;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: VAR_SIDEBAR_BG !important;
+        border-right: 1px solid VAR_CARD_BORDER;
+    }
+    
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: var(--text-main) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {
+        color: var(--text-main) !important;
+    }
+
+    [data-testid="stSidebar"] div.stButton {
+        margin-bottom: -15px !important;
+    }
+
+    [data-testid="stSidebar"] div.stButton > button {
+        width: 100% !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        display: flex !important;
+        border: none;
+        background-color: transparent;
+        color: var(--text-muted);
+        padding: 12px 20px !important;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        align-items: center;
+    }
+
+    [data-testid="stSidebar"] div.stButton > button > div {
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+
+    div.stButton > button:hover {
+        background-color: rgba(125, 125, 125, 0.1);
+        color: var(--text-main);
+        transform: translateX(5px);
+    }
+    
+    div.stButton > button:focus {
+        border: none;
+        outline: none;
+        color: var(--text-main);
+    }
+
+    .css-card {
+        background-color: var(--bg-card);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid VAR_CARD_BORDER;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: VAR_SHADOW;
+    }
+    
+    .css-card h3 {
+        color: var(--text-main) !important;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .stTextInput input, .stNumberInput input, .stSelectbox div, .stDateInput div {
+        background-color: VAR_INPUT_BG !important;
+        color: var(--text-main) !important;
+        border-color: VAR_CARD_BORDER !important;
+    }
+
+    .gradient-text {
+        background: linear-gradient(90deg, var(--text-main) 0%, #00E5FF 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+    }
+</style>
+"""
+
+css = css.replace("VAR_BG", theme['bg'])
+css = css.replace("VAR_CARD_BG", theme['card_bg'])
+css = css.replace("VAR_TEXT_MAIN", theme['text_main'])
+css = css.replace("VAR_TEXT_MUTED", theme['text_muted'])
+css = css.replace("VAR_GRADIENT", theme['bg_gradient'])
+css = css.replace("VAR_SIDEBAR_BG", theme['sidebar_bg'])
+css = css.replace("VAR_CARD_BORDER", theme['card_border'])
+css = css.replace("VAR_SHADOW", theme['shadow'])
+css = css.replace("VAR_INPUT_BG", theme['input_bg'])
+
+st.markdown(css, unsafe_allow_html=True)
+
+# ============================================
 # 3. DATABASE & HELPERS
-# ============================================ 
+# ============================================
 DB_PATH = os.path.join("database", "esg_index.db")
 if not os.path.exists(DB_PATH) and os.path.exists(os.path.join("..", DB_PATH)): DB_PATH = os.path.join("..", DB_PATH)
 
@@ -127,7 +225,11 @@ def init_db():
         except: pass
         try: 
             if conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0] == 0:
-                conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, 1, 1)", [("E1-6", "GHG emissions", "Klimat", 1), ("S1-1", "Policies", "Personal", 1)])
+                requirements = [
+                    ("E1-6", "Gross Scope 1, 2, 3 and Total GHG emissions", "Klimatpåverkan", 1),
+                    ("S1-16", "Remuneration metrics (Pay gap)", "Lönegap", 1)
+                ]
+                conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, 1, 1)", requirements)
         except: pass
 
 init_db()
@@ -138,15 +240,15 @@ def show_page_help(text):
 
 if 'page' not in st.session_state: st.session_state.page = "Översikt"
 
-# ============================================ 
-# 4. PAGE FRAGMENTS (TURBO MODE 🚀)
-# ============================================ 
+# ============================================
+# 4. PAGE FRAGMENTS
+# ============================================
 
 @st.fragment
 def render_overview(conn):
     st.markdown('<h1 style="font-size: 3rem;">ESG <span class="gradient-text">Evidence Engine</span></h1>', unsafe_allow_html=True)
     st.markdown("Centraliserad plattform för hållbarhetsdata, rapportering och analys.", unsafe_allow_html=True)
-    show_page_help("**Välkommen till din ESG-cockpit!** Här får du en snabb överblick över bolagets hållbarhetsprestanda.\n* **CO2 Scope 1 & 2:** Visar utsläpp från egna fordon och energianvändning.\n* **CSRD Readiness:** Visar hur stor andel av de obligatoriska ESRS-kraven ni har data för.")
+    show_page_help("**Välkommen till din ESG-cockpit!** Här får du en snabb överblick över bolagets hållbarhetsprestanda.")
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("CO2 Scope 1", "12.5 ton", "-2%")
@@ -167,26 +269,24 @@ def render_overview(conn):
 @st.fragment
 def render_strategy(conn):
     st.title("Strategi & Väsentlighet")
-    show_page_help("Enligt **CSRD (ESRS 2)** måste alla bolag genomföra en **Dubbel Väsentlighetsanalys (DMA)**.\n1. **Identifiera ämnen:** Lägg till hållbarhetsfrågor.\n2. **Bedöm Impact:** Påverkan på omvärlden (1-5).\n3. **Bedöm Finansiell risk:** Påverkan på bolaget (1-5).")
+    show_page_help("Genomför en Dubbel Väsentlighetsanalys (DMA) enligt ESRS.")
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.subheader("Dubbel Väsentlighetsanalys (DMA)")
     dma_data = dma_tool.get_dma_data(conn)
     if not dma_data.empty:
-        fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5], title="Väsentlighetsmatris")
+        fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5])
         fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.3)")
         fig.add_vline(x=2.5, line_dash="dash", line_color="rgba(255,255,255,0.3)")
         fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black", height=500)
         st.plotly_chart(fig, use_container_width=True)
-    else: st.info("Ingen data att visa. Lägg till ditt första ämne nedan.")
-    st.markdown("--- ")
     with st.form("dma_form"):
         col1, col2 = st.columns(2)
         with col1:
-            topic = st.text_input("Hållbarhetsämne")
+            topic = st.text_input("Ämne")
             cat = st.selectbox("Kategori", ["Miljö (E)", "Socialt (S)", "Styrning (G)"])
         with col2:
-            imp = st.slider("Impact (1-5)", 1, 5, 3)
-            fin = st.slider("Finansiell (1-5)", 1, 5, 3)
+            imp = st.slider("Impact", 1, 5, 3)
+            fin = st.slider("Finansiell", 1, 5, 3)
         if st.form_submit_button("Lägg till"):
             dma_tool.add_dma_topic(conn, topic, imp, fin, cat)
             st.rerun()
@@ -195,7 +295,6 @@ def render_strategy(conn):
 @st.fragment
 def render_hr(conn):
     st.title("HR & Social Hållbarhet")
-    show_page_help("Här samlar ni in social data uppdelad enligt **ESRS S1 (Egen personal)** och **S2 (Värdekedjan)**.")
     tab_s1, tab_s2, tab_hist = st.tabs(["👥 S1: Egen Personal", "🚜 S2: Konsulter", "📈 Historik"])
     with tab_s1:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -209,24 +308,14 @@ def render_hr(conn):
                 utb = st.number_input("Utbildningstimmar", 0.0)
                 enps = st.slider("eNPS", -100, 100, 10)
             if st.form_submit_button("Spara S1"):
-                data = {'ar': ar, 'enps_intern': enps, 'cnps_konsult': 0, 'antal_interna': interna, 'antal_konsulter': 0, 'nyanstallda_ar': 0, 'sjukfranvaro_procent': 0, 'arbetsolyckor_antal': 0, 'inspirerade_barn_antal': 0, 'utbildning_timmar_snitt': utb, 'employee_category': 'Internal', 'gender_pay_gap_pct': pay_gap}
+                data = {'ar': ar, 'enps_intern': enps, 'cnps_token': 0, 'antal_interna': interna, 'antal_konsulter': 0, 'nyanstallda_ar': 0, 'sjukfranvaro_procent': 0, 'arbetsolyckor_antal': 0, 'inspirerade_barn_antal': 0, 'utbildning_timmar_snitt': utb, 'employee_category': 'Internal', 'gender_pay_gap_pct': pay_gap}
                 social_tracker.save_extended_hr_data(conn, data)
-                st.success("Sparat!")
-        st.markdown('</div>', unsafe_allow_html=True)
-    with tab_s2:
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        with st.form("s2_form"):
-            ar = st.number_input("År", 2024, key="s2_ar")
-            konsulter = st.number_input("Antal konsulter", 0)
-            if st.form_submit_button("Spara S2"):
-                # Simplified logic for brevity
                 st.success("Sparat!")
         st.markdown('</div>', unsafe_allow_html=True)
 
 @st.fragment
 def render_governance(conn):
     st.title("Governance & Leverantörskedja")
-    show_page_help("**G1 (Business Conduct)** kräver ordning på styrdokument.")
     tab_pol, tab_kpi = st.tabs(["📚 Policys", "📊 KPI"])
     with tab_pol:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -244,7 +333,6 @@ def render_governance(conn):
 @st.fragment
 def render_calc(conn):
     st.title("Automatiska Beräkningar")
-    show_page_help("Beräkna **Scope 3** (Pendling & Inköp).")
     t1, t2, t3 = st.tabs(["Pendling", "Inköp (Spend)", "Uppdatera"])
     with t2:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -264,7 +352,6 @@ def render_calc(conn):
 @st.fragment
 def render_reports(conn):
     st.title("Generera Rapporter")
-    show_page_help("Exportera CSRD-rapporter och Excel-underlag.")
     t1, t2 = st.tabs(["CSRD", "Index"])
     with t1:
         if st.button("Ladda ner PDF"):
@@ -274,8 +361,7 @@ def render_reports(conn):
 @st.fragment
 def render_audit(conn):
     st.title("Audit Trail")
-    show_page_help("Endast för granskning.")
-    st.info("Här visas transaktionsloggar.")
+    st.info("Loggar visas här.")
 
 @st.fragment
 def render_settings(conn):
@@ -290,29 +376,31 @@ def render_settings(conn):
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# ============================================ 
+# ============================================
 # 5. SIDEBAR & ROUTING
-# ============================================ 
+# ============================================
 with st.sidebar:
-    st.markdown("<div style=\"text-align: center; padding: 10px 0 25px 0;\"><h1>ESG</h1><div style=\"height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;\"></div><p>Hållbarhetsindex</p></div>", unsafe_allow_html=True)
-    st.markdown("--- ")
+    st.markdown("<div style='text-align: center; padding: 10px 0 25px 0;'><h1 style='margin: 0; font-weight: 800; letter-spacing: 4px; color: "+theme['text_main']+"; font-size: 2.5rem;'>ESG</h1><div style='height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;'></div><p style='margin: 0; color: #00E5FF; font-family: Inter, sans-serif; font-weight: 300; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase;'>Hållbarhetsindex</p></div>", unsafe_allow_html=True)
+    st.markdown("---")
     nav_items = {"Översikt": ":material/dashboard:", "Strategi (CSRD)": ":material/target:", "HR-Data": ":material/groups:", "Governance": ":material/gavel:", "Beräkningar": ":material/calculate:", "Rapporter": ":material/article:", "Revisorvy": ":material/find_in_page:", "Inställningar": ":material/settings:"}
     for label, icon in nav_items.items():
         if st.button(label, icon=icon, key=label, type="primary" if st.session_state.page == label else "secondary", use_container_width=True):
             st.session_state.page = label
             st.rerun()
-    st.markdown("--- ")
+    st.markdown("---")
     card_bg = "rgba(255, 255, 255, 0.03)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.03)"
-    st.markdown(f"<div style=\"background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;\"><div><div style=\"width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;\">J</div><div><div style=\"color: {theme['text_main']}; font-weight: 600; font-size: 13px;\">Jenny</div><div style=\"color: {theme['text_muted']}; font-size: 10px;\">System Admin</div></div></div><a href=\"?logout=1\" target=\"_self\" style=\"color: {theme['text_muted']}; text-decoration: none; padding: 5px;\\"><span style=\"font-size: 18px;\">⏻</span></a></div>", unsafe_allow_html=True)
-    st.caption("v5.0 Turbo Mode")
+    border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
+    text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
+    st.markdown(f"<div style='background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;'><div style='display: flex; align-items: center;'><div style='width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;'>J</div><div><div style='color: {text_col}; font-weight: 600; font-size: 13px;'>Jenny</div><div style='color: {theme['text_muted']}; font-size: 10px;'>System Admin</div></div></div><a href='?logout=1' target='_self' style='color: {theme['text_muted']}; text-decoration: none; padding: 5px;'><span style='font-size: 18px;'>⏻</span></a></div>", unsafe_allow_html=True)
+    st.caption("v5.5 Hardened Build")
 
 conn = get_connection()
-if page == "Översikt": render_overview(conn)
-elif page == "Strategi (CSRD)": render_strategy(conn)
-elif page == "HR-Data": render_hr(conn)
-elif page == "Governance": render_governance(conn)
-elif page == "Beräkningar": render_calc(conn)
-elif page == "Rapporter": render_reports(conn)
-elif page == "Revisorvy": render_audit(conn)
-elif page == "Inställningar": render_settings(conn)
+if st.session_state.page == "Översikt": render_overview(conn)
+elif st.session_state.page == "Strategi (CSRD)": render_strategy(conn)
+elif st.session_state.page == "HR-Data": render_hr(conn)
+elif st.session_state.page == "Governance": render_governance(conn)
+elif st.session_state.page == "Beräkningar": render_calc(conn)
+elif st.session_state.page == "Rapporter": render_reports(conn)
+elif st.session_state.page == "Revisorvy": render_audit(conn)
+elif st.session_state.page == "Inställningar": render_settings(conn)
 conn.close()
