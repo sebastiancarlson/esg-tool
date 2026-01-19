@@ -334,20 +334,21 @@ def render_calc():
         c1, c2 = st.columns([1, 1])
         
         with c1:
-            with st.expander("👤 Hantera Personal", expanded=False):
+            with st.expander("👤 Hantera Pendlingsprofiler", expanded=False):
+                st.info("Skapa anonyma profiler baserat på bostadsort för att beräkna pendlingsavstånd.")
                 with st.form("add_person"):
-                    fnamn = st.text_input("Förnamn")
-                    enamn = st.text_input("Efternamn")
-                    pnr = st.text_input("Hem-postnummer")
-                    if st.form_submit_button("Spara Person"):
+                    profile_ref = st.text_input("Profil-referens (t.ex. Anställd A)", placeholder="Anställd A")
+                    pnr = st.text_input("Hem-postnummer (för avståndsberäkning)")
+                    if st.form_submit_button("Spara Profil"):
                         with get_connection() as conn:
-                            conn.execute("INSERT INTO d_Personal (fornamn, efternamn, hem_postnummer) VALUES (?, ?, ?)", (fnamn, enamn, pnr))
+                            # We repurpose the existing name fields to store the reference
+                            conn.execute("INSERT INTO d_Personal (fornamn, efternamn, hem_postnummer) VALUES (?, ?, ?)", (profile_ref, "Anonym", pnr))
                             conn.commit()
-                        st.success("Person sparad!")
+                        st.success("Profil sparad!")
                         st.rerun()
                 
                 with get_connection() as conn:
-                    pers_df = pd.read_sql("SELECT * FROM d_Personal", conn)
+                    pers_df = pd.read_sql("SELECT person_id, fornamn as Profil, hem_postnummer as Postnummer FROM d_Personal", conn)
                     if not pers_df.empty:
                         st.dataframe(pers_df, hide_index=True)
 
@@ -368,19 +369,19 @@ def render_calc():
                         st.dataframe(site_df, hide_index=True)
 
         with c2:
-            with st.expander("📅 Skapa Uppdrag", expanded=True):
+            with st.expander("📅 Skapa Pendlingsuppdrag", expanded=True):
                 with get_connection() as conn:
-                    pers_list = pd.read_sql("SELECT person_id, fornamn || ' ' || efternamn as namn FROM d_Personal", conn)
+                    pers_list = pd.read_sql("SELECT person_id, fornamn as namn FROM d_Personal", conn)
                     site_list = pd.read_sql("SELECT kund_plats_id, kund_namn FROM d_Kundsiter", conn)
                 
                 if not pers_list.empty and not site_list.empty:
                     with st.form("add_assignment"):
-                        pid = st.selectbox("Välj Person", options=pers_list['person_id'], format_func=lambda x: pers_list[pers_list['person_id']==x]['namn'].values[0])
-                        sid = st.selectbox("Välj Kund", options=site_list['kund_plats_id'], format_func=lambda x: site_list[site_list['kund_plats_id']==x]['kund_namn'].values[0])
+                        pid = st.selectbox("Välj Profil", options=pers_list['person_id'], format_func=lambda x: pers_list[pers_list['person_id']==x]['namn'].values[0])
+                        sid = st.selectbox("Välj Kund/Site", options=site_list['kund_plats_id'], format_func=lambda x: site_list[site_list['kund_plats_id']==x]['kund_namn'].values[0])
                         start = st.date_input("Startdatum")
                         slut = st.date_input("Slutdatum", value=datetime.now())
                         dagar = st.slider("Arbetsdagar per vecka", 1.0, 7.0, 5.0)
-                        dist = st.number_input("Distans (valfri km, lämna 0 för API-beräkning)", 0.0)
+                        dist = st.number_input("Manuell distans (valfri km, lämna 0 för automatik)", 0.0)
                         fard = st.selectbox("Färdmedel", ["Bil", "Elbil", "Buss", "Tåg", "Cykel", "Okänt"])
                         
                         if st.form_submit_button("Spara Uppdrag"):
@@ -393,7 +394,7 @@ def render_calc():
                             st.success("Uppdrag sparat!")
                             st.rerun()
                 else:
-                    st.warning("Lägg till personal och kundplatser först.")
+                    st.warning("Skapa pendlingsprofiler och kundplatser först.")
 
         st.markdown("---")
         st.subheader("Kör Beräkningar")
@@ -407,7 +408,7 @@ def render_calc():
         
         with get_connection() as conn:
             calc_df = pd.read_sql("""
-                SELECT p.fornamn || ' ' || p.efternamn as Konsult, k.kund_namn as Kund, 
+                SELECT p.fornamn as Profil, k.kund_namn as Site, 
                        b.totalt_co2_kg as 'CO2 (kg)', b.datakvalitet as Kvalitet
                 FROM f_Pendling_Beraknad b
                 JOIN f_Uppdrag u ON b.uppdrag_id = u.uppdrag_id
