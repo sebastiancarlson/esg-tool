@@ -276,39 +276,32 @@ with st.sidebar:
     st.markdown("<h3 style='text-align: center; color: #7CF7F9; margin-top: -20px; font-weight: 300;'>&lt;Hållbarhetsindex&gt;</h3>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # Navigation Items
+    # Navigation Items (Using Material Design Icons for consistency)
     nav_items = {
-        "Översikt": "📊",
-        "Strategi (CSRD)": "🎯",
-        "HR-Data": "👥",
-        "Governance": "⚖️",
-        "Beräkningar": "🧮",
-        "Rapporter": "📄",
-        "Revisorvy": "🔍",
-        "Inställningar": "⚙️"
+        "Översikt": ":material/dashboard:",
+        "Strategi (CSRD)": ":material/target:",
+        "HR-Data": ":material/groups:",
+        "Governance": ":material/gavel:",
+        "Beräkningar": ":material/calculate:",
+        "Rapporter": ":material/article:",
+        "Revisorvy": ":material/find_in_page:",
+        "Inställningar": ":material/settings:"
     }
     
-    for label, icon in nav_items.items():
-        # Active state styling logic: 
-        # We use a trick with Markdown to render the active bar, 
-        # or we just rely on the button visual change (which is limited in pure Streamlit).
-        # For a truly custom look, we can check state and render differently.
-        
+    for label, icon_name in nav_items.items():
+        # Active state styling logic
         if st.session_state.page == label:
-            # Active button style (simulated via markdown + button hack or just primary type)
-             # NOTE: Streamlit buttons don't support custom classes easily. 
-             # We use a primary button for active state to distinguish it.
-            if st.button(f"{icon}  {label}", key=label, type="primary", use_container_width=True):
-                pass # Already active
+            if st.button(label, icon=icon_name, key=label, type="primary", use_container_width=True):
+                pass 
         else:
-            if st.button(f"{icon}  {label}", key=label, type="secondary", use_container_width=True):
+            if st.button(label, icon=icon_name, key=label, type="secondary", use_container_width=True):
                 st.session_state.page = label
                 st.rerun()
 
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
-    st.caption("v2.2 CSS Fix")
+    st.caption("v2.3 White Icons")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
