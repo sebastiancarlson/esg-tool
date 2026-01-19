@@ -6,13 +6,13 @@ import time
 
 # Import local modules
 try:
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend
     from modules import report_csrd, export_excel
 except ImportError:
     # Fallback if running from inside reference-code without package structure
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend
     from modules import report_csrd, export_excel
 
 
@@ -196,6 +196,50 @@ def init_db():
             CREATE TABLE IF NOT EXISTS f_Governance_Inkop (ar INTEGER PRIMARY KEY, uppforandekod_pct INTEGER, visselblasare_antal INTEGER, gdpr_incidenter INTEGER, it_inkop_co2 REAL, lev_krav_pct INTEGER)
         """)
 
+        # --- MASTER PLAN TABLES (Modules A, B, D) ---
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_DMA_Materiality (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                topic TEXT NOT NULL,
+                impact_score INTEGER CHECK(impact_score BETWEEN 1 AND 5),
+                financial_score INTEGER CHECK(financial_score BETWEEN 1 AND 5),
+                esrs_code TEXT,
+                category TEXT,
+                stakeholder_input TEXT,
+                created_date TEXT,
+                last_updated TEXT,
+                is_material INTEGER DEFAULT 0
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Scope3_Calculations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category TEXT NOT NULL,
+                subcategory TEXT,
+                spend_sek REAL,
+                emission_factor REAL,
+                co2e_tonnes REAL,
+                data_quality TEXT CHECK(data_quality IN ('Verified', 'Estimated', 'Default')),
+                reporting_period TEXT,
+                source_document TEXT,
+                created_date TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Governance_Policies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                policy_name TEXT NOT NULL UNIQUE,
+                document_version TEXT,
+                owner TEXT,
+                last_updated DATE,
+                next_review_date DATE,
+                is_implemented INTEGER DEFAULT 0,
+                document_link TEXT,
+                esrs_requirement TEXT,
+                notes TEXT
+            )
+        """)
+
         # --- MISSING TABLES FOR SCOPE 1, 2 & 3 & REPORTS ---
         conn.execute("""
             CREATE TABLE IF NOT EXISTS f_Drivmedel (
@@ -301,7 +345,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
-    st.caption("v2.3 White Icons")
+    st.caption("v3.0 Scope 3 Spend")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
@@ -494,26 +538,59 @@ elif page == "Governance":
 elif page == "Beräkningar":
     st.title("Automatiska Beräkningar")
     
-    col1, col2 = st.columns(2)
+    # Flikar för olika scopes
+    tab_pendling, tab_spend, tab_update = st.tabs(["Scope 3: Pendling", "Scope 3: Inköp (Spend)", "Uppdatera Scope 1 & 2"])
     
-    with col1:
+    with tab_pendling:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        st.subheader("🚌 Beräkna Scope 3 (Konsultpendling)")
+        st.subheader("🚌 Beräkna Konsultpendling")
+        st.info("Hämtar distanser från API och matchar med uppdragsdata.")
         
-        if st.button("Kör beräkning"):
+        if st.button("Kör pendlingsberäkning"):
             with st.spinner("Hämtar distanser och beräknar..."):
                 result = scope3_pendling.calculate_all_consultants(conn)
                 
                 st.success(f"✅ Beräknat {result['antal_uppdrag']} uppdrag")
-                st.metric("Totalt CO2", f"{result['total_co2_ton']:.1f} ton")
-                
-                # Visa datakvalitetsfördelning
+                st.metric("Totalt CO2 (Pendling)", f"{result['total_co2_ton']:.1f} ton")
                 st.json(result['quality_breakdown'])
         st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab_spend:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("💸 Beräkna Inköpta Varor & Tjänster")
+        st.markdown("Spend-baserad analys (Scope 3.1) för tjänster, IT och material.")
+        
+        col_form, col_stat = st.columns([1, 2])
+        
+        with col_form:
+            with st.form("spend_form"):
+                kategori = st.selectbox("Kategori", scope3_spend.get_categories())
+                subkategori = st.text_input("Beskrivning", placeholder="T.ex. IT-konsulter Q1")
+                belopp = st.number_input("Belopp (SEK)", min_value=0.0, step=1000.0)
+                ar_spend = st.selectbox("År", [2024, 2025], key="spend_year")
+                
+                if st.form_submit_button("Lägg till utgift"):
+                    co2 = scope3_spend.add_spend_item(conn, kategori, subkategori, belopp, ar_spend)
+                    st.success(f"Lagt till! {co2:.2f} ton CO2e")
+        
+        with col_stat:
+            # Visa sammanställning
+            try:
+                summary = scope3_spend.get_spend_summary(conn, ar_spend)
+                if not summary.empty:
+                    st.dataframe(summary, hide_index=True)
+                    st.metric("Total CO2 (Inköp)", f"{summary['total_co2'].sum():.1f} ton")
+                else:
+                    st.info("Inga utgifter registrerade för detta år.")
+            except:
+                st.info("Databasen uppdateras...")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    with col2:
+    with tab_update:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
         st.subheader("📊 Uppdatera Scope 1 & 2")
+        st.markdown("Kör om alla beräkningar för drivmedel och energi baserat på senaste faktorerna.")
         
         if st.button("Omberäkna alla poster"):
             scope1_calculator.recalculate_all(conn)
