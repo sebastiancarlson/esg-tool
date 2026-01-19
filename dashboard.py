@@ -118,7 +118,7 @@ def show_page_help(title, content):
 
 @st.fragment
 def render_overview():
-    st.markdown('<h1 style="font-size: 3rem;">ESG <span class="gradient-text">Evidence Engine</span></h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800;">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
     show_page_help("Översikt", "Här visas bolagets totala klimatavtryck baserat på registrerad data.")
     
     with get_connection() as conn:
@@ -262,13 +262,33 @@ def render_settings():
 # 5. MAIN ROUTING
 # ============================================
 with st.sidebar:
-    st.markdown("<h1 style='text-align:center;'>ESG</h1>", unsafe_allow_html=True)
+    # Established Header
+    st.markdown("""
+        <div style="text-align: center; padding: 10px 0 20px 0;">
+            <h1 style="margin: 0; font-weight: 800; letter-spacing: 2px; color: #FFFFFF; font-size: 2rem;">ESG</h1>
+            <p style="margin: 0; color: #00E5FF; font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">
+                Hållbarhetsindex
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
     pages = ["Översikt", "Strategi (CSRD)", "HR-Data", "Governance", "Beräkningar", "Rapporter", "Inställningar"]
     for p in pages:
         if st.button(p, type="primary" if st.session_state.page == p else "secondary", use_container_width=True):
             st.session_state.page = p
             st.rerun()
-    st.markdown(f"<div style='padding:10px; background:rgba(255,255,255,0.05); border-radius:10px;'>👤 Jenny<br><a href='?logout=1' style='color:#FF4B4B;'>Logga ut</a></div>", unsafe_allow_html=True)
+            
+    st.markdown("---")
+    # Integrated Profile & Logout
+    st.markdown(f"""
+        <div style="background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center;">
+                <div style="width: 32px; height: 32px; background: #2962FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;">J</div>
+                <div style="color: white; font-weight: 600; font-size: 14px;">Jenny</div>
+            </div>
+            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255, 75, 75, 0.2); transition: all 0.3s ease;">Logga ut</a>
+        </div>
+    """, unsafe_allow_html=True)
 
 if st.session_state.page == "Översikt": render_overview()
 elif st.session_state.page == "Strategi (CSRD)": render_strategy()
