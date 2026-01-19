@@ -199,7 +199,6 @@ if not os.path.exists(DB_PATH) and os.path.exists(os.path.join("..", DB_PATH)): 
 
 def get_connection(): return sqlite3.connect(DB_PATH)
 
-@st.cache_resource
 def init_db():
     with get_connection() as conn:
         # Table list
