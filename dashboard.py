@@ -6,13 +6,13 @@ import time
 
 # Import local modules
 try:
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
 except ImportError:
     # Fallback if running from inside reference-code without package structure
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance
+    from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
 
 
@@ -239,6 +239,41 @@ def init_db():
                 notes TEXT
             )
         """)
+        
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_Social_Metrics (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                metric_type TEXT NOT NULL,
+                value REAL,
+                period TEXT,
+                data_source TEXT,
+                employee_category TEXT
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (
+                esrs_code TEXT PRIMARY KEY,
+                disclosure_requirement TEXT,
+                description TEXT,
+                mandatory INTEGER DEFAULT 1,
+                applies_to_skill INTEGER DEFAULT 1
+            )
+        """)
+
+        # Seed ESRS Requirements if empty
+        try:
+            check = conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0]
+            if check == 0:
+                requirements = [
+                    ("E1-6", "Gross Scope 1, 2, 3 and Total GHG emissions", "Klimatpåverkan och växthusgaser", 1),
+                    ("S1-1", "Policies related to own workforce", "Policys för egen personal", 1),
+                    ("S1-14", "Health and safety indicators", "Hälsa och säkerhet", 1),
+                    ("S1-16", "Remuneration metrics (Pay gap)", "Lönegap mellan könen", 1),
+                    ("G1-1", "Business conduct policies", "Affärsetik och policys", 1)
+                ]
+                conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, 1, 1)", requirements)
+        except: pass
 
         # --- MISSING TABLES FOR SCOPE 1, 2 & 3 & REPORTS ---
         conn.execute("""
@@ -316,8 +351,17 @@ init_db()
 # CUSTOM SIDEBAR NAVIGATION
 # ============================================
 with st.sidebar:
-    st.markdown("## **ESG**", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center; color: #7CF7F9; margin-top: -20px; font-weight: 300;'>&lt;Hållbarhetsindex&gt;</h3>", unsafe_allow_html=True)
+    # Premium Header
+    st.markdown("""
+        <div style="text-align: center; padding: 10px 0 25px 0;">
+            <h1 style="margin: 0; font-weight: 800; letter-spacing: 4px; color: #FFFFFF; font-size: 2.5rem;">ESG</h1>
+            <div style="height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;"></div>
+            <p style="margin: 0; color: #00E5FF; font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase;">
+                Hållbarhetsindex
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("---")
     
     # Navigation Items (Using Material Design Icons for consistency)
@@ -345,7 +389,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
-    st.caption("v3.1 Governance")
+    st.caption("v4.0 Master Plan Complete")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
@@ -362,10 +406,18 @@ if page == "Översikt":
     st.markdown("Centraliserad plattform för hållbarhetsdata, rapportering och analys.", unsafe_allow_html=True)
     st.markdown("<br>", unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("CO2 Scope 1", "12.5 ton", "-2%")
     col2.metric("CO2 Scope 2", "4.2 ton", "-15%")
     col3.metric("CO2 Scope 3", "Calculating...", "Pending")
+    
+    # Dynamic Readiness Score
+    try:
+        idx_data = index_generator.get_esrs_index(conn, 2024)
+        score = index_generator.calculate_readiness_score(idx_data)
+        col4.metric("CSRD Readiness", f"{score}%", "+5%")
+    except:
+        col4.metric("CSRD Readiness", "0%", "N/A")
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -376,120 +428,185 @@ if page == "Översikt":
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
-# SIDA 2: STRATEGI (NY)
+# SIDA 2: STRATEGI & DMA (UPGRADED)
 # ============================================
 elif page == "Strategi (CSRD)":
     st.title("Strategi & Väsentlighet")
     
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
-    st.subheader("Dubbel Väsentlighetsanalys (CSRD)")
-    st.markdown("Identifiera och bedöm hållbarhetsfrågor baserat på påverkan och finansiell risk.")
+    st.subheader("Dubbel Väsentlighetsanalys (DMA)")
+    st.markdown("Identifiera och bedöm hållbarhetsfrågor enligt CSRD/ESRS-krav.")
     
-    with st.form("materiality_form"):
-        col_input, col_scores = st.columns([1, 2])
+    # Hämtar data
+    dma_data = dma_tool.get_dma_data(conn)
+    
+    # --- VISUALISERING (MATRIS) ---
+    import plotly.express as px
+    
+    if not dma_data.empty:
+        # Skapa scatter plot
+        fig = px.scatter(
+            dma_data,
+            x="financial_score",
+            y="impact_score",
+            text="topic",
+            color="category",
+            size_max=20,
+            range_x=[0.5, 5.5],
+            range_y=[0.5, 5.5],
+            title="Väsentlighetsmatris (Impact vs Financial)",
+            labels={"financial_score": "Finansiell Väsentlighet", "impact_score": "Impact Väsentlighet"}
+        )
         
-        with col_input:
-            omrade = st.text_input("Hållbarhetsområde", placeholder="t.ex. Klimat, Arbetsvillkor")
-            ar_strat = st.number_input("År", value=2024, step=1)
-            
-        with col_scores:
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown("**Impact Materiality**")
-                impact_score = st.slider("Påverkan på omvärlden (1-10)", 1, 10, help="1=Liten, 10=Kritisk")
-            with c2:
-                st.markdown("**Financial Materiality**")
-                fin_score = st.slider("Finansiell risk/möjlighet (1-10)", 1, 10, help="Risk för intäkter/kostnader")
+        # Lägg till tröskellinjer (vid 3)
+        fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.3)")
+        fig.add_vline(x=2.5, line_dash="dash", line_color="rgba(255,255,255,0.3)")
         
-        if st.form_submit_button("Lägg till i matris"):
-            try:
-                conn.execute("INSERT INTO f_Vasentlighet (omrade, impact_score, fin_score, ar) VALUES (?, ?, ?, ?)", (omrade, impact_score, fin_score, ar_strat))
-                conn.commit()
-                st.success(f"Lagt till {omrade}")
-            except Exception as e:
-                st.error(f"Fel: {e}")
+        # Styling
+        fig.update_traces(textposition='top center', marker=dict(size=12, line=dict(width=2, color='DarkSlateGrey')))
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            font_color="white",
+            height=500,
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.info("Ingen data att visa. Lägg till ditt första ämne nedan.")
 
-    # Visualisering (Matris)
-    import altair as alt
-    try:
-        data = pd.read_sql(f"SELECT * FROM f_Vasentlighet WHERE ar={ar_strat}", conn)
-        
-        if not data.empty:
-            st.markdown("### Väsentlighetsmatris")
-            chart = alt.Chart(data).mark_circle(size=200).encode(
-                x=alt.X('fin_score', title='Finansiell Risk (1-10)', scale=alt.Scale(domain=[0, 11])),
-                y=alt.Y('impact_score', title='Påverkan på Omvärlden (1-10)', scale=alt.Scale(domain=[0, 11])),
-                color=alt.Color('omrade', legend=alt.Legend(title="Område")),
-                tooltip=['omrade', 'fin_score', 'impact_score']
-            ).properties(
-                title=f"Väsentlighetsmatris {ar_strat}",
-                height=400
-            ).interactive()
+    # --- FORMULÄR ---
+    st.markdown("---")
+    with st.form("dma_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            topic = st.text_input("Hållbarhetsämne", placeholder="t.ex. Klimatförändringar")
+            cat = st.selectbox("Kategori", ["Miljö (E)", "Socialt (S)", "Styrning (G)"])
+        with col2:
+            imp = st.slider("Impact Väsentlighet (1-5)", 1, 5, 3, help="Hur stor påverkan har vi på omvärlden?")
+            fin = st.slider("Finansiell Väsentlighet (1-5)", 1, 5, 3, help="Hur stor risk/möjlighet för bolaget?")
             
-            st.altair_chart(chart, use_container_width=True)
+        if st.form_submit_button("Lägg till i analys"):
+            if topic:
+                dma_tool.add_dma_topic(conn, topic, imp, fin, cat)
+                st.success(f"'{topic}' har lagts till!")
+                st.rerun()
+            else:
+                st.error("Ange ett ämne.")
+
+    # --- TABELL ---
+    if not dma_data.empty:
+        with st.expander("Visa detaljerad lista & ESRS-mappning"):
+            st.dataframe(
+                dma_data[['topic', 'category', 'esrs_code', 'impact_score', 'financial_score', 'is_material']],
+                column_config={
+                    "is_material": st.column_config.CheckboxColumn("Väsentligt?")
+                },
+                hide_index=True,
+                use_container_width=True
+            )
             
-            with st.expander("Visa tabelldata"):
-                st.dataframe(data)
-    except Exception as e:
-        st.info("Ingen data tillgänglig än.")
+            # Delete knapp
+            to_del = st.selectbox("Ta bort ämne", dma_data['id'], format_func=lambda x: dma_data[dma_data['id']==x]['topic'].values[0])
+            if st.button("Ta bort markerat ämne"):
+                dma_tool.delete_dma_topic(conn, to_del)
+                st.rerun()
+                
     st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ============================================
-# SIDA 3: HR-DATA (UPPDATERAD)
+# SIDA 3: HR & SOCIAL DATA (UPGRADED)
 # ============================================
 elif page == "HR-Data":
     st.title("HR & Social Hållbarhet")
     
-    tab1, tab2, tab3, tab4 = st.tabs(["Personal", "Hälsa", "Mångfald", "Årsvis Data"])
+    tab_s1, tab_s2, tab_history = st.tabs(["👥 S1: Egen Personal", "🚜 S2: Konsulter", "📈 Historik & KPI"])
     
-    with tab1:
+    # --- TAB S1: EGEN PERSONAL ---
+    with tab_s1:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        st.subheader("Personalöversikt")
-        st.info("Här visas detaljerad personalstatistik.")
+        st.subheader("Data för egen arbetsstyrka (ESRS S1)")
+        
+        with st.form("s1_form"):
+            ar_s1 = st.number_input("Rapporteringsår", value=2024, step=1)
+            
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("**Demografi & Grunddata**")
+                interna = st.number_input("Antal interna medarbetare (FTE)", min_value=0)
+                nyanstallda = st.number_input("Nyanställda under året", min_value=0)
+                pay_gap = st.number_input("Gender Pay Gap (okorrigerat %)", min_value=0.0, step=0.1)
+            
+            with c2:
+                st.markdown("**Utveckling & Hälsa**")
+                utbildning = st.number_input("Utbildningstimmar per anställd (snitt)", min_value=0.0, step=0.5)
+                sjuk = st.number_input("Sjukfrånvaro (%)", min_value=0.0, max_value=100.0, step=0.1)
+                enps = st.slider("eNPS (Medarbetarnöjdhet)", -100, 100, 10)
+            
+            if st.form_submit_button("Spara S1-data"):
+                data = {
+                    'ar': ar_s1, 'enps_intern': enps, 'cnps_konsult': 0, 
+                    'antal_interna': interna, 'antal_konsulter': 0, 'nyanstallda_ar': nyanstallda,
+                    'sjukfranvaro_procent': sjuk, 'arbetsolyckor_antal': 0, 
+                    'inspirerade_barn_antal': 0, 'utbildning_timmar_snitt': utbildning,
+                    'employee_category': 'Internal', 'gender_pay_gap_pct': pay_gap
+                }
+                social_tracker.save_extended_hr_data(conn, data)
+                st.success("S1-data sparad!")
+                st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
-        
-    with tab4:
-        st.subheader("Årsvis HR-data")
-        
+
+    # --- TAB S2: KONSULTER ---
+    with tab_s2:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
-        with st.form("hr_form"):
-            ar = st.number_input("År", value=2024, step=1)
+        st.subheader("Arbetstagare i värdekedjan (ESRS S2)")
+        st.info("För bemanningsbolag är detta en kritisk del av ESRS-rapporteringen.")
+        
+        with st.form("s2_form"):
+            ar_s2 = st.number_input("Rapporteringsår", value=2024, step=1, key="ar_s2")
             
-            col1, col2, col3 = st.columns(3)
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("**Bemanningsvolym**")
+                konsulter = st.number_input("Antal konsulter i uppdrag (snitt)", min_value=0)
+                olyckor_konsult = st.number_input("Arbetsolyckor (konsulter)", min_value=0)
             
-            with col1:
-                st.markdown("**Medarbetarnöjdhet**")
-                enps = st.number_input("eNPS (Intern)", min_value=-100, max_value=100)
-                cnps = st.number_input("cNPS (Konsult)", min_value=-100, max_value=100)
+            with c2:
+                st.markdown("**Engagemang**")
+                cnps = st.slider("cNPS (Konsultnöjdhet)", -100, 100, 10)
+                inspirerade = st.number_input("Antal inspirerade barn/unga", min_value=0)
             
-            with col2:
-                st.markdown("**Bemanning**")
-                interna = st.number_input("Antal interna", min_value=0)
-                konsulter = st.number_input("Antal konsulter", min_value=0)
-                nyanstallda = st.number_input("Nyanställda", min_value=0)
-            
-            with col3:
-                st.markdown("**Hälsa & Säkerhet**")
-                sjuk = st.number_input("Sjukfrånvaro (%)", min_value=0.0, step=0.1)
-                olyckor = st.number_input("Arbetsolyckor", min_value=0)
+            if st.form_submit_button("Spara S2-data"):
+                # Vi hämtar befintlig data för året och uppdaterar S2-fälten
+                existing = social_tracker.get_hr_summary(conn, ar_s2)
+                if not existing.empty:
+                    data = existing.iloc[0].to_dict()
+                else:
+                    data = {k: 0 for k in ['ar', 'enps_intern', 'cnps_konsult', 'antal_interna', 'antal_konsulter', 'nyanstallda_ar', 'sjukfranvaro_procent', 'arbetsolyckor_antal', 'inspirerade_barn_antal', 'utbildning_timmar_snitt', 'gender_pay_gap_pct']}
+                    data['employee_category'] = 'Mixed'
                 
-                st.markdown("---")
-                st.markdown("**Samhällsengagemang**")
-                inspirerade = st.number_input("Antal inspirerade barn/unga", min_value=0, help="T.ex. via Code Summer Camp")
-                utbildning = st.number_input("Timmar kompetensutv. per anställd", min_value=0.0, step=0.5)
-            
-            if st.form_submit_button("Spara HR-data"):
-                try:
-                    conn.execute("""
-                        INSERT OR REPLACE INTO f_HR_Arsdata 
-                        (ar, enps_intern, cnps_konsult, antal_interna, antal_konsulter, nyanstallda_ar, sjukfranvaro_procent, arbetsolyckor_antal, inspirerade_barn_antal, utbildning_timmar_snitt)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (ar, enps, cnps, interna, konsulter, nyanstallda, sjuk, olyckor, inspirerade, utbildning))
-                    conn.commit()
-                    st.success("✅ HR-data och Sociala KPI:er sparade!")
-                except Exception as e:
-                    st.error(f"Fel vid sparning: {e}")
+                data['ar'] = ar_s2
+                data['antal_konsulter'] = konsulter
+                data['arbetsolyckor_antal'] = olyckor_konsult
+                data['cnps_konsult'] = cnps
+                data['inspirerade_barn_antal'] = inspirerade
+                
+                social_tracker.save_extended_hr_data(conn, data)
+                st.success("S2-data sparad!")
+                st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- TAB HISTORY ---
+    with tab_history:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("Historisk HR-data")
+        history = pd.read_sql("SELECT * FROM f_HR_Arsdata ORDER BY ar DESC", conn)
+        if not history.empty:
+            st.dataframe(history, hide_index=True, use_container_width=True)
+        else:
+            st.info("Ingen historik tillgänglig.")
         st.markdown('</div>', unsafe_allow_html=True)
 
 # ============================================
@@ -660,8 +777,9 @@ elif page == "Beräkningar":
 elif page == "Rapporter":
     st.title("Generera Rapporter")
     
-    tab1, tab2, tab3, tab4 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
         "CSRD/ESRS",
+        "ESRS Index",
         "EcoVadis",
         "ISO 14001",
         "Custom Excel"
@@ -683,6 +801,20 @@ elif page == "Rapporter":
                     file_name=f"ESG_CSRD_{ar}.pdf",
                     mime="application/pdf"
                 )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab2:
+        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.subheader("ESRS Content Index")
+        st.markdown("Spårbarhetsmatris som visar efterlevnad mot specifika ESRS-krav.")
+        
+        ar_idx = st.selectbox("Välj år för index", [2024, 2025], key="ar_idx")
+        idx_df = index_generator.get_esrs_index(conn, ar_idx)
+        
+        st.dataframe(idx_df, hide_index=True, use_container_width=True)
+        
+        score_val = index_generator.calculate_readiness_score(idx_df)
+        st.metric("Readiness Score", f"{score_val}%")
         st.markdown('</div>', unsafe_allow_html=True)
     
     with tab4:
