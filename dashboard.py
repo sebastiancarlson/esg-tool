@@ -25,6 +25,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Hantera utloggning via URL-parameter
+if st.query_params.get("logout") == "1":
+    st.session_state["password_correct"] = False
+    st.query_params.clear()
+    st.rerun()
+
 def check_password():
     """Returns `True` if the user had a correct password."""
 
@@ -475,20 +481,23 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # Compact Profile Card
+    # Compact Profile Card with Integrated Logout
     card_bg = "rgba(255, 255, 255, 0.03)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.03)"
     border_col = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
     text_col = "#FFFFFF" if st.session_state['dark_mode'] else "#171717"
     
     st.markdown(f"""
-        <div style="background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col};">
+        <div style="background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid {border_col}; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center;">
                 <div style="width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px; box-shadow: 0 2px 8px rgba(0, 229, 255, 0.2);">J</div>
                 <div>
-                    <div style="color: {text_col}; font-weight: 600; font-size: 13px;">Jenny Svensson</div>
+                    <div style="color: {text_col}; font-weight: 600; font-size: 13px;">Jenny</div>
                     <div style="color: {theme['text_muted']}; font-size: 10px;">System Admin</div>
                 </div>
             </div>
+            <a href="/?logout=1" target="_self" style="color: {theme['text_muted']}; text-decoration: none; padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.05); transition: all 0.3s;" onmouseover="this.style.color='#FF4B4B'" onmouseout="this.style.color='{theme['text_muted']}'">
+                <span style="font-size: 18px;">⏻</span>
+            </a>
         </div>
     """, unsafe_allow_html=True)
     
@@ -501,11 +510,6 @@ with st.sidebar:
         if is_dark != st.session_state['dark_mode']:
             st.session_state['dark_mode'] = is_dark
             st.rerun()
-    
-    # Logout button
-    if st.button("Logga ut", type="secondary", use_container_width=True):
-        st.session_state["password_correct"] = False
-        st.rerun()
 
 conn = get_connection()
 page = st.session_state.page
