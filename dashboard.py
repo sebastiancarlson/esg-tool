@@ -207,8 +207,8 @@ def init_db():
                 ("E1-6", "Växthusgasutsläpp (Scope 1, 2, 3)", "Klimat", 1, 1),
                 ("E1-9", "Finansiella effekter av klimatrisker", "Klimat", 1, 1),
                 ("S1-1", "Policyer för egen personal", "Socialt", 1, 1),
-                ("S1-16", "Lönegap mellan könen", "Socialt", 1, 1),
-                ("G1-1", "Företagskultur och affärsetik", "Styrning", 1, 1),
+                ("S1-16", "Löneskillnader mellan könen (Gender Pay Gap)", "Socialt", 1, 1),
+                ("G1-1", "Företagskultur och affärsetik", "Styrning", 1, 1),,
                 ("G1-3", "Förebyggande av korruption", "Styrning", 1, 1)
             ]
             conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, ?, ?)", esrs_data)
