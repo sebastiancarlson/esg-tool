@@ -74,7 +74,8 @@ st.markdown("""
     }
 
     /* --- BUTTONS IN SIDEBAR --- */
-    div.stButton > button {
+    /* --- SIDEBAR BUTTONS (Navigation) --- */
+    [data-testid="stSidebar"] div.stButton > button {
         width: 100% !important;
         text-align: left !important;
         justify-content: flex-start !important;
@@ -88,6 +89,12 @@ st.markdown("""
         border-radius: 8px;
         margin-bottom: 5px;
         align-items: center;
+    }
+
+    /* Fix för inre text-container i knappen */
+    [data-testid="stSidebar"] div.stButton > button > div {
+        justify-content: flex-start !important;
+        text-align: left !important;
     }
 
     div.stButton > button:hover {
@@ -301,7 +308,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
-    st.caption("v2.1 Optimized")
+    st.caption("v2.2 CSS Fix")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
