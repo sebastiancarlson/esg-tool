@@ -213,6 +213,10 @@ def init_db():
             ]
             conn.executemany("INSERT INTO f_ESRS_Requirements VALUES (?, ?, ?, ?, ?)", esrs_data)
             conn.commit()
+        
+        # Force update label for S1-16 if it was created with the old name
+        conn.execute("UPDATE f_ESRS_Requirements SET disclosure_requirement = 'Löneskillnader mellan könen (Gender Pay Gap)' WHERE esrs_code = 'S1-16'")
+        conn.commit()
             
         try: conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN ledning_kvinnor INTEGER DEFAULT 0")
         except: pass
