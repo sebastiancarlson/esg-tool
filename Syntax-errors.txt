@@ -1,0 +1,91 @@
+TO-DO att fixa
+
+Översikt
+
+- Ändra placeholder data till faktisk aktuell data. 
+
+Strategi & Väsentlighet (CSRD)
+
+- Det går inte att spara Ämne.
+
+Får följande error:
+
+sqlite3.ProgrammingError: This app has encountered an error. The original error message is redacted to prevent data leaks. Full error details have been recorded in the logs (if you're on Streamlit Cloud, click on 'Manage app' in the lower right of your app).
+Traceback:
+File "/mount/src/esg-tool/dashboard.py", line 320, in render_strategy
+    dma_tool.add_dma_topic(conn, topic, imp, fin, cat)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mount/src/esg-tool/modules/dma_tool.py", line 40, in add_dma_topic
+    conn.execute("""
+    ~~~~~~~~~~~~^^^^
+        INSERT INTO f_DMA_Materiality
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (topic, impact_score, financial_score, esrs_code, category, is_material, created_date, last_updated)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    """, (topic, impact, financial, esrs_code, category, is_material, datetime.now().strftime('%Y-%m-%d'), datetime.now().strftime('%Y-%m-%d')))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+HR-data 
+
+- Fixa så att man inte behöver räkna ut procent. Man matar in hur mycket antal av vardera kön så räknar systemet ut procentandelen åt en. 
+- Det går inte att spara data.
+
+Error för hela sidan "HR": 
+"KeyError: This app has encountered an error. The original error message is redacted to prevent data leaks. Full error details have been recorded in the logs (if you're on Streamlit Cloud, click on 'Manage app' in the lower right of your app).
+Traceback:
+File "/mount/src/esg-tool/dashboard.py", line 366, in render_hr
+    social_tracker.save_extended_hr_data(conn, data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+File "/mount/src/esg-tool/modules/social_tracker.py", line 19, in save_extended_hr_data
+    conn.execute("INSERT OR REPLACE INTO f_HR_Arsdata (ar, enps_intern, cnps_konsult, antal_interna, antal_konsulter, nyanstallda_ar, sjukfranvaro_procent, arbetsolyckor_ant"
+
+Governance & Leverantörskedja
+
+- Fixa så att man kan bifoga/importera dokument.
+
+Error för hela gov:
+
+"sqlite3.ProgrammingError: This app has encountered an error. The original error message is redacted to prevent data leaks. Full error details have been recorded in the logs (if you're on Streamlit Cloud, click on 'Manage app' in the lower right of your app).
+Traceback:
+File "/mount/src/esg-tool/dashboard.py", line 407, in render_governance
+    governance.add_policy(conn, name, "1.0", owner, date, "G1")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mount/src/esg-tool/modules/governance.py", line 43, in add_policy
+    conn.execute("INSERT INTO f_Governance_Policies (policy_name, document_version, owner, last_updated, next_review_date, esrs_requirement, is_implemented) VALUES (?, ?, ?, ?, ?, ?, 1)", (name, version, owner, date_obj.strftime('%Y-%m-%d'), next_review.strftime('%Y-%m-%d'), esrs_req))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+
+Beräkningar
+
+- Alla element saknas från "Pendling"
+- Man borde få mata in mängden inköp i "Inköp (Spend)
+- Alla flikar består av följande error:
+
+"sqlite3.ProgrammingError: This app has encountered an error. The original error message is redacted to prevent data leaks. Full error details have been recorded in the logs (if you're on Streamlit Cloud, click on 'Manage app' in the lower right of your app).
+Traceback:
+File "/mount/src/esg-tool/dashboard.py", line 443, in render_calc
+    scope3_spend.add_spend_item(conn, cat, sub, prod, sek, ar)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/mount/src/esg-tool/modules/scope3_spend.py", line 42, in add_spend_item
+    conn.execute("""
+    ~~~~~~~~~~~~^^^^
+        INSERT INTO f_Scope3_Calculations
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (category, subcategory, product_name, spend_sek, emission_factor, co2e_tonnes, data_quality, reporting_period, created_date)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    """, (category, subcategory, product_name, spend_sek, factor, co2, quality, period, datetime.now().strftime('%Y-%m-%d')))
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+
+Rapporter
+
+- Index saknar alla sina element.
+- PDF är tom som exporteras/laddas next_review_date
+
+Inställningar
+
+- Ta bort flik info
+- Lägg till filformat för word, PDF i import
+- Ändra färg på knapp "Ladda ner Systemfil(.db)" till en mörkare färg. Svårt att tyda den vita texten.

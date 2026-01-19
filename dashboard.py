@@ -19,7 +19,12 @@ except ImportError:
 # ============================================
 # 1. CONFIG & AUTH
 # ============================================
-st.set_page_config(page_title="ESG Hållbarhetsindex", page_icon="🌱", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="ESG Hållbarhetsindex", 
+    page_icon="🌱", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 if st.query_params.get("logout") == "1":
     st.session_state["password_correct"] = False
@@ -39,7 +44,7 @@ def check_password():
         st.markdown("<style>.stApp {background-color: #0A0E17; background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);}</style>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col2:
-            st.markdown("<br><br><br><h1>ESG <span style='color:#00E5FF;'>Admin</span></h1>", unsafe_allow_html=True)
+            st.markdown("<br><br><br><h1 style='color:white; text-align:center;'>ESG <span style='color:#00E5FF;'>Admin</span></h1>", unsafe_allow_html=True)
             st.text_input("Användarnamn", key="username")
             st.text_input("Lösenord", type="password", key="password")
             if st.button("Logga in", type="primary", use_container_width=True):
@@ -54,9 +59,10 @@ if not check_password():
     st.stop()
 
 # ============================================
-# 2. THEME & STYLING
+# 2. THEME & STYLING (SAFE STRINGS)
 # ============================================
 if 'dark_mode' not in st.session_state: st.session_state['dark_mode'] = True
+
 theme = {
     'bg': '#0A0E17' if st.session_state['dark_mode'] else '#F2F4F8',
     'bg_gradient': 'radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%)' if st.session_state['dark_mode'] else 'linear-gradient(180deg, #F2F4F8 0%, #E2E8F0 100%)',
@@ -69,20 +75,106 @@ theme = {
     'input_bg': 'rgba(255,255,255,0.05)' if st.session_state['dark_mode'] else '#F8FAFC'
 }
 
-st.markdown(f"""
+css = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    :root {{ --bg-dark: {theme['bg']}; --bg-card: {theme['card_bg']}; --text-main: {theme['text_main']}; --text-muted: {theme['text_muted']}; }}
-    html, body, [class*="css"], [data-testid="stAppViewContainer"] {{ font-family: 'Inter', sans-serif; color: var(--text-main) !important; background-color: var(--bg-dark) !important; }}
-    .stApp {{ background-color: var(--bg-dark); background-image: {theme['bg_gradient']}; background-attachment: fixed; }}
-    [data-testid="stSidebar"] {{ background-color: {theme['sidebar_bg']} !important; border-right: 1px solid {theme['card_border']}; }}
-    [data-testid="stSidebar"] div.stButton {{ margin-bottom: -15px !important; }}
-    [data-testid="stSidebar"] div.stButton > button {{ width: 100% !important; text-align: left !important; justify-content: flex-start !important; display: flex !important; border: none; background-color: transparent; color: var(--text-muted); padding: 12px 20px !important; transition: all 0.3s ease; align-items: center; }}
-    [data-testid="stSidebar"] div.stButton > button[kind="primary"] {{ background-color: rgba(0, 229, 255, 0.15) !important; color: #00E5FF !important; border-left: 4px solid #00E5FF !important; }}
-    .css-card {{ background-color: var(--bg-card); backdrop-filter: blur(12px); border: 1px solid {theme['card_border']}; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: {theme['shadow']}; }}
-    .gradient-text {{ background: linear-gradient(90deg, var(--text-main) 0%, #00E5FF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }}
+    
+    :root {
+        --esg-blue-primary: #2962FF;  
+        --esg-cyan: #00E5FF;          
+        --bg-dark: VAR_BG;
+        --bg-card: VAR_CARD_BG;             
+        --text-main: VAR_TEXT_MAIN;
+        --text-muted: VAR_TEXT_MUTED;
+    }
+
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', sans-serif;
+        color: var(--text-main) !important;
+        background-color: var(--bg-dark) !important;
+    }
+    
+    .stApp {
+        background-color: var(--bg-dark);
+        background-image: VAR_BG_GRADIENT;
+        background-attachment: fixed;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: VAR_SIDEBAR_BG !important;
+        border-right: 1px solid VAR_CARD_BORDER;
+    }
+    
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: var(--text-main) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {
+        color: var(--text-main) !important;
+    }
+
+    [data-testid="stSidebar"] div.stButton {
+        margin-bottom: -15px !important;
+    }
+
+    [data-testid="stSidebar"] div.stButton > button {
+        width: 100% !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        display: flex !important;
+        border: none;
+        background-color: transparent;
+        color: var(--text-muted);
+        padding: 12px 20px !important;
+        transition: all 0.3s ease;
+        align-items: center;
+    }
+
+    [data-testid="stSidebar"] div.stButton > button[kind="primary"] {
+        background-color: rgba(0, 229, 255, 0.15) !important;
+        color: #00E5FF !important;
+        border-left: 4px solid #00E5FF !important;
+    }
+
+    [data-testid="stSidebar"] div.stButton > button > div {
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+
+    div.stButton > button:hover {
+        background-color: rgba(125, 125, 125, 0.1);
+        color: var(--text-main);
+        transform: translateX(5px);
+    }
+    
+    div.stButton > button:focus {
+        border: none;
+        outline: none;
+        color: var(--text-main);
+    }
+
+    .css-card {
+        background-color: var(--bg-card);
+        backdrop-filter: blur(12px);
+        border: 1px solid VAR_CARD_BORDER;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: VAR_SHADOW;
+    }
 </style>
-""", unsafe_allow_html=True)
+"""
+
+css = css.replace("VAR_BG", theme['bg'])
+css = css.replace("VAR_CARD_BG", theme['card_bg'])
+css = css.replace("VAR_TEXT_MAIN", theme['text_main'])
+css = css.replace("VAR_TEXT_MUTED", theme['text_muted'])
+css = css.replace("VAR_BG_GRADIENT", theme['bg_gradient'])
+css = css.replace("VAR_SIDEBAR_BG", theme['sidebar_bg'])
+css = css.replace("VAR_CARD_BORDER", theme['card_border'])
+css = css.replace("VAR_SHADOW", theme['shadow'])
+
+st.markdown(css, unsafe_allow_html=True)
 
 # ============================================
 # 3. DB & HELPERS
@@ -106,11 +198,20 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)"
         ]
         for sql in tables: conn.execute(sql)
+        try: conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN ledning_kvinnor INTEGER DEFAULT 0")
+        except: pass
+        try: conn.execute("ALTER TABLE f_HR_Arsdata ADD COLUMN ledning_man INTEGER DEFAULT 0")
+        except: pass
+        try: conn.execute("ALTER TABLE f_Scope3_Calculations ADD COLUMN product_name TEXT")
+        except: pass
+
 init_db()
 
 def show_page_help(title, content):
     with st.expander(f"📘 Guide: {title}", expanded=False):
         st.markdown(content)
+
+if 'page' not in st.session_state: st.session_state.page = "Översikt"
 
 # ============================================
 # 4. PAGE FRAGMENTS
@@ -118,7 +219,7 @@ def show_page_help(title, content):
 
 @st.fragment
 def render_overview():
-    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800;">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
     show_page_help("Översikt", "Här visas bolagets totala klimatavtryck baserat på registrerad data.")
     
     with get_connection() as conn:
@@ -129,15 +230,15 @@ def render_overview():
         readiness = index_generator.calculate_readiness_score(idx_data)
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("CO2 Scope 1", f"{s1:.1f} t", "+2%")
-    col2.metric("CO2 Scope 2", f"{s2:.1f} t", "-5%")
-    col3.metric("CO2 Scope 3", f"{s3:.1f} t", "Calculated")
-    col4.metric("Readiness Score", f"{readiness:.0f}%", "+12%")
+    col1.metric("CO2 Scope 1", f"{s1:.1f} t")
+    col2.metric("CO2 Scope 2", f"{s2:.1f} t")
+    col3.metric("CO2 Scope 3", f"{s3:.1f} t")
+    col4.metric("Readiness Score", f"{readiness:.0f}%")
 
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.subheader("Klimatfördelning")
     fig = px.bar(x=["Scope 1", "Scope 2", "Scope 3"], y=[s1, s2, s3], color=["#2962FF", "#00E5FF", "#7C4DFF"], title="Ton CO2e per Scope")
-    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white")
+    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black")
     st.plotly_chart(fig, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -246,27 +347,27 @@ def render_reports():
 @st.fragment
 def render_settings():
     st.title("Inställningar")
-    t1, t2, t3 = st.tabs(["📤 Import", "💾 Datahantering", "🎨 Vy & Tema"])
+    t1, t2, t3 = st.tabs(["💾 Datahantering", "🎨 Vy & Tema", "📤 Import"])
     with t1:
-        st.file_uploader("Importera data (Excel, PDF, Word)", type=["xlsx", "pdf", "docx"])
-    with t2:
         with open(DB_PATH, "rb") as f:
-            st.download_button("Ladda ner Systemfil (.db)", f, file_name="ESG_Data.db", type="primary")
-    with t3:
+            st.download_button(label="Ladda ner Systemfil (.db)", data=f, file_name="ESG_Data.db", type="primary", use_container_width=True)
+    with t2:
         dark = st.toggle("Mörkt läge", value=st.session_state.dark_mode)
         if dark != st.session_state.dark_mode:
             st.session_state.dark_mode = dark
             st.rerun()
+    with t3:
+        st.file_uploader("Importera data", type=["xlsx", "pdf", "docx"])
 
 # ============================================
 # 5. MAIN ROUTING
 # ============================================
 with st.sidebar:
-    # Established Header
+    # Sidebar Header
     st.markdown("""
-        <div style="text-align: center; padding: 10px 0 20px 0;">
-            <h1 style="margin: 0; font-weight: 800; letter-spacing: 2px; color: #FFFFFF; font-size: 2rem;">ESG</h1>
-            <p style="margin: 0; color: #00E5FF; font-family: 'Inter', sans-serif; font-weight: 300; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">
+        <div style="text-align: center; padding: 10px 0 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+            <h1 style="margin: 0; font-weight: 800; letter-spacing: 3px; color: #FFFFFF; font-size: 2.2rem;">ESG</h1>
+            <p style="margin: 0; color: #00E5FF; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 400;">
                 Hållbarhetsindex
             </p>
         </div>
@@ -278,15 +379,21 @@ with st.sidebar:
             st.session_state.page = p
             st.rerun()
             
-    st.markdown("---")
-    # Integrated Profile & Logout
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    
+    # Premium Profile Card
+    card_bg = "rgba(255, 255, 255, 0.05)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.05)"
+    text_color = "white" if st.session_state['dark_mode'] else "#171717"
     st.markdown(f"""
-        <div style="background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: space-between;">
+        <div style="background-color: {card_bg}; border-radius: 16px; padding: 15px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <div style="display: flex; align-items: center;">
-                <div style="width: 32px; height: 32px; background: #2962FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;">J</div>
-                <div style="color: white; font-weight: 600; font-size: 14px;">Jenny</div>
+                <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #2962FF, #00E5FF); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 12px; font-size: 16px;">J</div>
+                <div>
+                    <div style="color: {text_color}; font-weight: 700; font-size: 14px;">Jenny</div>
+                    <div style="color: #00E5FF; font-size: 10px; font-weight: 600; text-transform: uppercase;">Administrator</div>
+                </div>
             </div>
-            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255, 75, 75, 0.2); transition: all 0.3s ease;">Logga ut</a>
+            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 18px; padding: 5px; border-radius: 8px; background: rgba(255,75,75,0.1); display: flex; align-items: center; justify-content: center; transition: 0.3s;">⏻</a>
         </div>
     """, unsafe_allow_html=True)
 
