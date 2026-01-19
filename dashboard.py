@@ -178,7 +178,7 @@ def render_strategy(conn):
         fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black", height=500)
         st.plotly_chart(fig, use_container_width=True)
     else: st.info("Ingen data att visa. Lägg till ditt första ämne nedan.")
-    st.markdown("---")
+    st.markdown("--- ")
     with st.form("dma_form"):
         col1, col2 = st.columns(2)
         with col1:
@@ -295,15 +295,15 @@ def render_settings(conn):
 # ============================================ 
 with st.sidebar:
     st.markdown("<div style=\"text-align: center; padding: 10px 0 25px 0;\"><h1>ESG</h1><div style=\"height: 2px; background: linear-gradient(90deg, transparent, #00E5FF, transparent); margin: 5px auto; width: 80%;\"></div><p>Hållbarhetsindex</p></div>", unsafe_allow_html=True)
-    st.markdown("---")
+    st.markdown("--- ")
     nav_items = {"Översikt": ":material/dashboard:", "Strategi (CSRD)": ":material/target:", "HR-Data": ":material/groups:", "Governance": ":material/gavel:", "Beräkningar": ":material/calculate:", "Rapporter": ":material/article:", "Revisorvy": ":material/find_in_page:", "Inställningar": ":material/settings:"}
     for label, icon in nav_items.items():
         if st.button(label, icon=icon, key=label, type="primary" if st.session_state.page == label else "secondary", use_container_width=True):
             st.session_state.page = label
             st.rerun()
-    st.markdown("---")
+    st.markdown("--- ")
     card_bg = "rgba(255, 255, 255, 0.03)" if st.session_state['dark_mode'] else "rgba(0, 0, 0, 0.03)"
-    st.markdown(f"<div style=\"background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;\"><div><div style=\"width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;\">J</div><div><div style=\"color: {theme['text_main']}; font-weight: 600; font-size: 13px;\">Jenny</div><div style=\"color: {theme['text_muted']}; font-size: 10px;\">System Admin</div></div></div><a href=\"?logout=1\" target=\"_self\" style=\"color: {theme['text_muted']}; text-decoration: none; padding: 5px;\"><span style=\"font-size: 18px;\">⏻</span></a></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style=\"background-color: {card_bg}; border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;\"><div><div style=\"width: 34px; height: 34px; background: linear-gradient(135deg, #00E5FF 0%, #2962FF 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 10px; font-size: 14px;\">J</div><div><div style=\"color: {theme['text_main']}; font-weight: 600; font-size: 13px;\">Jenny</div><div style=\"color: {theme['text_muted']}; font-size: 10px;\">System Admin</div></div></div><a href=\"?logout=1\" target=\"_self\" style=\"color: {theme['text_muted']}; text-decoration: none; padding: 5px;\\"><span style=\"font-size: 18px;\">⏻</span></a></div>", unsafe_allow_html=True)
     st.caption("v5.0 Turbo Mode")
 
 conn = get_connection()
