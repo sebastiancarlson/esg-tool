@@ -240,7 +240,14 @@ if 'page' not in st.session_state: st.session_state.page = "Översikt"
 @st.fragment
 def render_overview():
     st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
-    show_page_help("Översikt", "Här visas företagets totala klimatavtryck baserat på registrerad data.")
+    show_page_help("Välkommen till ESG Evidence Engine", """
+    Denna instrumentpanel ger dig en samlad bild av hur väl bolaget uppfyller kraven i EU:s lagstiftning CSRD. 
+    
+    **Så läser du mätvärdena:**
+    1.  **Scope 1 & 2:** Våra direkta utsläpp från t.ex. företagsbilar och vår energiförbrukning. Målet här är att successivt ersätta schablonberäkningar med exakta mätvärden från leverantörer.
+    2.  **Scope 3:** Utsläpp i vår värdekedja (pendling och inköp). För ett tjänstebolag utgör detta ofta över 90% av det totala avtrycket.
+    3.  **Readiness Score:** Visar i realtid hur många av de obligatoriska datapunkterna i standarden ESRS vi faktiskt har samlat in och dokumenterat.
+    """)
     
     with get_connection() as conn:
         s1 = pd.read_sql("SELECT SUM(co2_kg)/1000.0 as ton FROM f_Drivmedel", conn).iloc[0,0] or 0.0
@@ -265,7 +272,14 @@ def render_overview():
 @st.fragment
 def render_strategy():
     st.title("Strategi & Väsentlighet")
-    show_page_help("DMA", "Identifiera och bedöm hållbarhetsfrågor (1-5).")
+    show_page_help("Dubbel Väsentlighetsanalys (DMA)", """
+    Enligt lagkravet ESRS 2 räcker det inte att fråga vad intressenterna tycker är viktigt. Vi måste bedöma varje hållbarhetsfråga utifrån två perspektiv:
+    
+    1.  **Impact Materiality (Y-axeln):** Hur stor påverkan har vår verksamhet på människa och miljö? (T.ex. våra konsulters arbetsmiljö).
+    2.  **Financial Materiality (X-axeln):** Hur stor finansiell risk utgör frågan för oss? (T.ex. risken att tappa kunder om vi saknar kollektivavtal eller miljöcertifiering).
+    
+    **Gör så här:** Lägg till ett ämne i formuläret nedan och bedöm det på en skala 1-5. Ämnen som hamnar i det övre högra hörnet i grafen klassas som "väsentliga" och inkluderas automatiskt i kraven för din hållbarhetsrapport.
+    """)
     dma_data = dma_tool.get_dma_data()
     
     if not dma_data.empty:
@@ -288,6 +302,12 @@ def render_strategy():
 @st.fragment
 def render_hr():
     st.title("HR & Social Hållbarhet")
+    show_page_help("Skillnaden på S1 och S2", """
+    CSRD kräver att vi skiljer tydligt på personalgrupper för att kunna rapportera korrekt social påverkan:
+    
+    *   **ESRS S1 (Egen personal):** Vår interna personal (HR, sälj, administration). Här mäter vi faktorer som "Gender Pay Gap", personalomsättning och utbildningstimmar.
+    *   **ESRS S2 (Arbetare i värdekedjan):** Våra uthyrda konsulter som befinner sig hos kund. Eftersom vi delar arbetsmiljöansvaret med kunden måste vi här spåra olyckor, incidenter och dialog separat för att matcha standarden.
+    """)
     tab1, tab2 = st.tabs(["👥 S1: Egen Personal", "📊 Historik"])
     with tab1:
         st.markdown('<div class="css-card">', unsafe_allow_html=True)
@@ -311,7 +331,13 @@ def render_hr():
 @st.fragment
 def render_governance():
     st.title("Governance")
-    show_page_help("Policys", "Ladda upp och bevaka era styrdokument.")
+    show_page_help("Styrning & Uppföljning (G1)", """
+    Det räcker inte att ha en uppförandekod (Code of Conduct). Vi måste bevisa att den efterlevs och hålls aktuell.
+    
+    *   **Policys:** Ladda upp era styrdokument och ange senaste revisionsdatum. Systemet räknar automatiskt ut när de behöver ses över nästa gång.
+    *   **Leverantörskrav:** Spåra hur stor andel av era leverantörer som signerat er kod eller genomgått en hållbarhetsbedömning.
+    *   **Incidenter:** Logga visselblåsarärenden och GDPR-incidenter för att säkerställa full spårbarhet inför revision.
+    """)
     
     with st.form("gov_form"):
         name = st.text_input("Namn på policy")
@@ -331,6 +357,12 @@ def render_governance():
 @st.fragment
 def render_calc():
     st.title("Beräkningar")
+    show_page_help("Kalkylator för Scope 3", """
+    Scope 3 är den svåraste men ofta största delen av klimatavtrycket. Vi använder två godkända metoder för att stänga ert datagap:
+    
+    1.  **Pendling (S3):** Systemet beräknar automatiskt CO2-utsläpp baserat på avståndet mellan pendlingsprofilernas hemort och kundens arbetsplats.
+    2.  **Inköp / Spend-based (S3):** För varor och tjänster (t.ex. IT-utrustning eller kontorsmaterial) där exakt leverantörsdata saknas, uppskattar vi utsläppen baserat på spenderat belopp (SEK) multiplicerat med branschspecifika emissionsfaktorer.
+    """)
     t1, t2 = st.tabs(["🚌 Pendling", "💸 Inköp (Spend)"])
     with t1:
         show_page_help("Pendling", "Hantera personal, kundplatser och uppdrag för att beräkna pendlingsutsläpp.")
@@ -451,6 +483,12 @@ def render_calc():
 @st.fragment
 def render_reports():
     st.title("Rapporter")
+    show_page_help("Från berättelse till Audit Trail", """
+    Inför en extern revision räcker det inte med en färdig PDF. Revisorn behöver se "den digitala tråden" – hur en siffra i rapporten hänger ihop med den ursprungliga datakällan.
+    
+    *   **CSRD PDF:** Genererar en textrapport strukturerad enligt ESRS-standarderna.
+    *   **ESRS Index:** Vår digitala "Gap-analys". Den mappar varje lagkrav mot vår faktiska data i databasen för att snabbt se vad som saknas.
+    """)
     t1, t2 = st.tabs(["📄 CSRD PDF", "🔍 ESRS Index"])
     with t1:
         if st.button("Generera Fullständig PDF"):
