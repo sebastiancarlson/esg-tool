@@ -75,18 +75,18 @@ st.markdown("""
 
     /* --- BUTTONS IN SIDEBAR --- */
     div.stButton > button {
-        width: 100%;
-        text-align: left;
-        justify-content: flex-start;
+        width: 100% !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        display: flex !important;
         border: none;
         background-color: transparent;
         color: var(--text-muted);
-        padding: 12px 20px;
+        padding: 12px 20px !important;
         font-size: 16px;
         transition: all 0.3s ease;
         border-radius: 8px;
         margin-bottom: 5px;
-        display: flex;
         align-items: center;
     }
 
@@ -301,6 +301,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 👤 Profil")
     st.markdown("**Jenny** (Admin)")
+    st.caption("v2.1 Optimized")
     
     st.markdown("### ⚙️ Vy")
     st.checkbox("Visa prognoser", value=True)
