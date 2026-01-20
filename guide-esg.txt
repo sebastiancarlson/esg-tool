@@ -1,0 +1,58 @@
+Guidetext till Appen:
+👋 Välkommen till ESG Evidence Engine
+Denna instrumentpanel visar hur nära vi är att uppfylla kraven i EU:s lagstiftning CSRD.
+• CO2 Scope 1 & 2: Våra direkta utsläpp (bilar) och energiförbrukning. Målet är att byta ut schabloner mot exakta mätvärden.
+• CO2 Scope 3: Värdekedjans utsläpp. För oss som tjänstebolag är detta ofta över 90 % av totalen (inköp & resor).
+• CSRD Readiness: En mätare på hur många av de obligatoriska datapunkterna i standarden ESRS som vi faktiskt har samlat in.
+Motivation (baserat på källorna): Skill saknar idag Scope 3-data helt och räknar Scope 2 "i överkant" på grund av bristande mätning,. Toyota visar att transparens kräver exakta siffror för att kunna sätta vetenskapliga mål.
+
+--------------------------------------------------------------------------------
+2. Strategi & Väsentlighet (render_strategy)
+Här sker övergången från Skills nuvarande intressentdialog till en lagstadgad dubbel väsentlighetsanalys.
+Guidetext till Appen:
+🎯 Dubbel Väsentlighetsanalys (Double Materiality Assessment)
+Enligt lagkravet ESRS 2 räcker det inte att fråga vad intressenterna tycker är viktigt. Vi måste bedöma varje fråga utifrån två perspektiv:
+1. Impact Materiality (y-axeln): Hur stor påverkan har vi på människor och miljö? (T.ex. våra konsulters arbetsmiljö).
+2. Financial Materiality (x-axeln): Hur stor finansiell risk utgör frågan för oss? (T.ex. risk att tappa kunder om vi inte har kollektivavtal).
+Endast frågor som hamnar i övre högra hörnet är "väsentliga" och måste rapporteras.
+Motivation (baserat på källorna): Skill gör idag en riskbedömning och dialog, men saknar den formella kopplingen till finansiell risk. Toyota genomförde denna process specifikt för att veta vilka ESRS-standarder de var tvungna att rapportera på, vilket strukturerade hela deras rapport,.
+
+--------------------------------------------------------------------------------
+3. HR & Social Hållbarhet (render_hr)
+Skill är starka på mjuka värden men behöver strukturera data striktare mellan egen personal och uthyrda konsulter enligt ESRS S1 och S2.
+Guidetext till Appen:
+👥 Skillnad på S1 och S2
+CSRD kräver att vi skiljer tydligt på personalgrupper:
+• ESRS S1 (Egen personal): Vår interna personal (HR, sälj, administration). Här mäter vi t.ex. "Gender Pay Gap" och utbildningstimmar.
+• ESRS S2 (Arbetare i värdekedjan): Våra konsulter ute hos kund. Eftersom vi är ett bemanningsföretag är deras arbetsmiljö vårt ansvar, men vi delar kontrollen med kunden. Här måste vi spåra olyckor och incidenter separat.
+Motivation (baserat på källorna): Skill redovisar redan statistik separerat för tjänstemän och arbetare, men appen formaliserar detta. Toyota redovisar exakt antal utbildningstimmar och olycksfall för att visa kontroll,, något Skill behöver kunna visa på detaljnivå för att matcha standarden.
+
+--------------------------------------------------------------------------------
+4. Governance & Leverantörskedja (render_governance)
+Här går vi från kvalitativa beskrivningar av policys till kvantitativa mätetal (KPI:er) som revisorn kan granska.
+Guidetext till Appen:
+⚖️ Styrning & Uppföljning (G1)
+Det räcker inte att ha en uppförandekod (Code of Conduct). Vi måste bevisa att den efterlevs.
+• Policys: Ladda upp dokument och sätt ett "bäst före-datum" för översyn. Gamla policys är en revisionsrisk.
+• Leverantörskrav: Här spårar vi exakt hur många % av våra leverantörer som signerat vår kod. Målet är 100 %.
+• Visselblåsare: Antal inkomna och hanterade ärenden loggas här för spårbarhet.
+Motivation (baserat på källorna): Skill nämner att de gör leverantörsbedömningar, men Toyota redovisar exakta siffror: "210 leverantörer har delat EcoVadis-kort, 135 förbereder sig". Det är denna detaljnivå appen hjälper Skill att nå.
+
+--------------------------------------------------------------------------------
+5. Automatiska Beräkningar (render_calc)
+Detta är verktyget för att lösa Skills största datagap: Scope 3.
+Guidetext till Appen:
+🧮 Kalkylator för Scope 3
+Scope 3 är ofta den största utsläppskällan men svårast att mäta. Vi använder två metoder:
+1. Pendling (S3): Systemet beräknar automatiskt CO2 baserat på avståndet mellan konsultens hem och kundens arbetsplats (från uppdragsdatabasen).
+2. Spend-based (S3): För inköp (t.ex. IT-utrustning) där vi saknar exakta utsläppsdata, uppskattar vi CO2 baserat på hur mycket pengar (SEK) vi spenderat multiplicerat med en emissionsfaktor.
+Motivation (baserat på källorna): Skill har som mål att rapportera Scope 3 år 2025. Toyota visar att "Purchased goods" och "Use of sold products" är deras största utsläpp. "Spend-based" är en godkänd metod (GHG Protocol) för att komma igång när leverantörsdata saknas.
+
+--------------------------------------------------------------------------------
+6. Rapporter & Revisorvy (render_audit)
+Skillnad på en "hållbarhetsberättelse" och en "revisionsbar rapport".
+Guidetext till Appen:
+🔍 Audit Trail (Spårbarhet)
+Inför revisionen räcker det inte med en färdig PDF. Revisorn behöver se "den digitala tråden".
+• Revisorvy: Här kan du klicka på en aggregerad siffra (t.ex. total CO2 för pendling) och borra ner till den enskilda beräkningen eller fakturan som ligger till grund.
+• Detta säkerställer att vår data är robust och tål extern granskning.

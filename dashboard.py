@@ -41,10 +41,11 @@ def check_password():
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        st.markdown("<style>.stApp {background-color: #0A0E17; background-image: radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%);}</style>", unsafe_allow_html=True)
+        # Dark Login Screen
+        st.markdown("<style>.stApp {background-color: #150B3F;}</style>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([1,1,1])
         with col2:
-            st.markdown("<br><br><br><h1 style='color:white; text-align:center;'>ESG <span style='color:#00E5FF;'>Admin</span></h1>", unsafe_allow_html=True)
+            st.markdown("<br><br><br><h1 style='color:#7CF7F9; text-align:center;'>ESG <span style='color:#FFFFFF;'>Workspace</span></h1>", unsafe_allow_html=True)
             st.text_input("Användarnamn", key="username")
             st.text_input("Lösenord", type="password", key="password")
             if st.button("Logga in", type="primary", use_container_width=True):
@@ -59,125 +60,141 @@ if not check_password():
     st.stop()
 
 # ============================================
-# 2. THEME & STYLING (SAFE STRINGS)
+# 2. THEME & STYLING (DARK MODE: INDIGO/AQUA)
 # ============================================
-if 'dark_mode' not in st.session_state: st.session_state['dark_mode'] = True
-
-theme = {
-    'bg': '#0A0E17' if st.session_state['dark_mode'] else '#F2F4F8',
-    'bg_gradient': 'radial-gradient(circle at 50% 0%, #1a2642 0%, #0A0E17 70%)' if st.session_state['dark_mode'] else 'linear-gradient(180deg, #F2F4F8 0%, #E2E8F0 100%)',
-    'card_bg': 'rgba(21, 27, 43, 0.6)' if st.session_state['dark_mode'] else '#FFFFFF',
-    'card_border': 'rgba(255, 255, 255, 0.08)' if st.session_state['dark_mode'] else 'rgba(0, 0, 0, 0.05)',
-    'text_main': '#F0F2F6' if st.session_state['dark_mode'] else '#171717',
-    'text_muted': '#B0B8C6' if st.session_state['dark_mode'] else '#64748B',
-    'sidebar_bg': '#0d1117' if st.session_state['dark_mode'] else '#FFFFFF',
-    'shadow': '0 4px 20px rgba(0, 0, 0, 0.3)' if st.session_state['dark_mode'] else '0 2px 15px rgba(0, 0, 0, 0.05)',
-    'input_bg': 'rgba(255,255,255,0.05)' if st.session_state['dark_mode'] else '#F8FAFC'
-}
-
-css = """
+st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    
+    /* --- 1. FONTS --- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;800&display=swap');
+
     :root {
-        --esg-blue-primary: #2962FF;  
-        --esg-cyan: #00E5FF;          
-        --bg-dark: VAR_BG;
-        --bg-card: VAR_CARD_BG;             
-        --text-main: VAR_TEXT_MAIN;
-        --text-muted: VAR_TEXT_MUTED;
+        --skill-indigo: #150B3F;    /* Main Background */
+        --skill-dark-indigo: #0F072D; /* Card/Sidebar Background */
+        --skill-aqua: #7CF7F9;      /* Text / Accent */
+        --skill-blue: #1A33F5;      /* Primary Action */
+        --skill-violet: #8A2BE2;    /* Shapes / Secondary */
+        --text-white: #FFFFFF;
     }
 
-    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+    html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
-        color: var(--text-main) !important;
-        background-color: var(--bg-dark) !important;
+        color: var(--skill-aqua);
+        background-color: var(--skill-indigo);
     }
     
-    .stApp {
-        background-color: var(--bg-dark);
-        background-image: VAR_BG_GRADIENT;
-        background-attachment: fixed;
-    }
-
-    [data-testid="stSidebar"] {
-        background-color: VAR_SIDEBAR_BG !important;
-        border-right: 1px solid VAR_CARD_BORDER;
+    /* Headers */
+    h1, h2, h3 {
+        color: var(--text-white) !important;
+        font-weight: 800;
+        letter-spacing: -0.02em;
     }
     
-    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
-        color: var(--text-main) !important;
-    }
-
-    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .stText {
-        color: var(--text-main) !important;
-    }
-
-    [data-testid="stSidebar"] div.stButton {
-        margin-bottom: -15px !important;
-    }
-
-    [data-testid="stSidebar"] div.stButton > button {
-        width: 100% !important;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        display: flex !important;
-        border: none;
-        background-color: transparent;
-        color: var(--text-muted);
-        padding: 12px 20px !important;
-        transition: all 0.3s ease;
-        align-items: center;
-    }
-
-    [data-testid="stSidebar"] div.stButton > button[kind="primary"] {
-        background-color: rgba(0, 229, 255, 0.15) !important;
-        color: #00E5FF !important;
-        border-left: 4px solid #00E5FF !important;
-    }
-
-    [data-testid="stSidebar"] div.stButton > button > div {
-        justify-content: flex-start !important;
-        text-align: left !important;
-    }
-
-    div.stButton > button:hover {
-        background-color: rgba(125, 125, 125, 0.1);
-        color: var(--text-main);
-        transform: translateX(5px);
+    /* Paragraphs / Ingress */
+    p, .skill-ingress {
+        color: var(--skill-aqua);
+        opacity: 0.9;
+        font-weight: 300;
+        line-height: 1.6;
     }
     
-    div.stButton > button:focus {
-        border: none;
-        outline: none;
-        color: var(--text-main);
-    }
-
-    .css-card {
-        background-color: var(--bg-card);
-        backdrop-filter: blur(12px);
-        border: 1px solid VAR_CARD_BORDER;
-        border-radius: 16px;
+    /* --- 2. CARDS (Darker Indigo with Aqua Border/Glow) --- */
+    .skill-card {
+        background: var(--skill-dark-indigo);
         padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: VAR_SHADOW;
+        border-radius: 20px;
+        border: 1px solid rgba(124, 247, 249, 0.1); /* Aqua border low opacity */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
+    
+    .skill-card h3 {
+        color: var(--skill-aqua) !important;
+        opacity: 0.7;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .skill-card div {
+        color: var(--text-white); /* Value is white for pop */
+    }
+
+    /* --- 3. ORGANIC SHAPES (Violet for contrast against Indigo) --- */
+    .people-spot-bg {
+        fill: var(--skill-violet);
+        opacity: 0.2;
+    }
+
+    /* --- 4. BUTTONS --- */
+    div.stButton > button {
+        background-color: var(--skill-blue);
+        color: white;
+        border-radius: 50px;
+        border: none;
+        font-weight: 600;
+    }
+    div.stButton > button:hover {
+        background-color: #7CF7F9; /* Aqua hover */
+        color: #150B3F; /* Indigo text */
+    }
+    
+    /* --- 5. SIDEBAR --- */
+    [data-testid="stSidebar"] {
+        background-color: var(--skill-dark-indigo);
+        border-right: 1px solid rgba(124, 247, 249, 0.05);
+    }
+    [data-testid="stSidebar"] h1 {
+        color: var(--text-white);
+    }
+    
+    /* --- 6. GRID --- */
+    .skill-grid-container {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 20px;
+        margin: 20px 0;
+    }
+
 </style>
-"""
-
-css = css.replace("VAR_BG", theme['bg'])
-css = css.replace("VAR_CARD_BG", theme['card_bg'])
-css = css.replace("VAR_TEXT_MAIN", theme['text_main'])
-css = css.replace("VAR_TEXT_MUTED", theme['text_muted'])
-css = css.replace("VAR_BG_GRADIENT", theme['bg_gradient'])
-css = css.replace("VAR_SIDEBAR_BG", theme['sidebar_bg'])
-css = css.replace("VAR_CARD_BORDER", theme['card_border'])
-css = css.replace("VAR_SHADOW", theme['shadow'])
-
-st.markdown(css, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ============================================
-# 3. DB & HELPERS
+# 3. HELPERS
+# ============================================
+
+def skill_ingress(text):
+    """Skriver ut en ingress (Inter 300)"""
+    st.markdown(f'<p class="skill-ingress" style="font-size: 1.2rem;">{text}</p>', unsafe_allow_html=True)
+
+def skill_spotlight_header(title, subtitle=None):
+    """Skapar en header med Spotlight-grafik (Violet mot Indigo)"""
+    svg_blob = """
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="position:absolute; top:-40px; left:-30px; width:140px; opacity:0.15; z-index:0;">
+      <path fill="#8A2BE2" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-5.3C93.5,8.6,82.2,21.5,70.6,32.3C59,43.1,47.1,51.8,35.1,59.3C23.1,66.8,11,73.1,-2.4,77.3C-15.8,81.5,-30.5,83.6,-43.3,77.7C-56.1,71.8,-67,57.9,-75.4,43.4C-83.8,28.9,-89.7,13.8,-88.3,-0.8C-86.9,-15.4,-78.2,-29.5,-67.2,-41.2C-56.2,-52.9,-42.9,-62.2,-29.6,-69.8C-16.3,-77.4,-3,-83.3,10.2,-82.5L23.4,-81.7Z" transform="translate(100 100)" />
+    </svg>
+    """
+    st.markdown(f"""
+    <div style="position:relative; padding: 20px 0 40px 0;">
+        {svg_blob}
+        <h1 style="position:relative; z-index:1; margin-bottom:0; font-size: 3rem;">{title}</h1>
+        {f'<p style="font-weight:500; color:#7CF7F9; margin-top:0; font-size: 1.1rem; text-transform:uppercase; letter-spacing:2px;">{subtitle}</p>' if subtitle else ''}
+    </div>
+    """, unsafe_allow_html=True)
+
+def skill_card(title, value, delta=None):
+    """Skapar ett kort enligt designsystemet (Dark Mode)"""
+    delta_html = f'<span style="color:{"#00E5FF" if "+" in str(delta) else "#FF4B4B"}; font-size:0.9em; margin-left:10px;">{delta}</span>' if delta else ""
+    st.markdown(f"""
+    <div class="skill-card">
+        <h3 style="margin:0;">{title}</h3>
+        <div style="font-size:2.5rem; font-weight:800; margin-top:10px; color:#FFFFFF;">
+            {value} {delta_html}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ============================================
+# 4. DB INIT
 # ============================================
 DB_PATH = os.path.join("database", "esg_index.db")
 if not os.path.exists(DB_PATH) and os.path.exists(os.path.join("..", DB_PATH)): DB_PATH = os.path.join("..", DB_PATH)
@@ -234,51 +251,59 @@ def show_page_help(title, content):
 if 'page' not in st.session_state: st.session_state.page = "Översikt"
 
 # ============================================
-# 4. PAGE FRAGMENTS
+# 5. PAGE FRAGMENTS
 # ============================================
 
 @st.fragment
 def render_overview():
-    st.markdown('<h1 style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">Plattform för Hållbarhet & ESG</h1>', unsafe_allow_html=True)
-    show_page_help("Välkommen till ESG Evidence Engine", """
-    Denna instrumentpanel ger dig en samlad bild av hur väl bolaget uppfyller kraven i EU:s lagstiftning CSRD. 
-    
-    **Så läser du mätvärdena:**
-    1.  **Scope 1 & 2:** Våra direkta utsläpp från t.ex. företagsbilar och vår energiförbrukning. Målet här är att successivt ersätta schablonberäkningar med exakta mätvärden från leverantörer.
-    2.  **Scope 3:** Utsläpp i vår värdekedja (pendling och inköp). För ett tjänstebolag utgör detta ofta över 90% av det totala avtrycket.
-    3.  **Readiness Score:** Visar i realtid hur många av de obligatoriska datapunkterna i standarden ESRS vi faktiskt har samlat in och dokumenterat.
+    # Header & Ingress
+    skill_spotlight_header("Hållbarhetsrapport 2025", "ESG Workspace")
+    skill_ingress("""
+    Människor förändras. De utvecklas, och söker nya utmaningar. 
+    Detta verktyg hjälper oss att mäta och förstå den förändringen genom data, 
+    från klimatpåverkan till socialt ansvar.
     """)
     
+    # Data fetch
     with get_connection() as conn:
         s1 = pd.read_sql("SELECT SUM(co2_kg)/1000.0 as ton FROM f_Drivmedel", conn).iloc[0,0] or 0.0
         s2 = pd.read_sql("SELECT SUM(scope2_market_based_kg)/1000.0 as ton FROM f_Energi", conn).iloc[0,0] or 0.0
         s3 = pd.read_sql("SELECT SUM(co2e_tonnes) as ton FROM f_Scope3_Calculations", conn).iloc[0,0] or 0.0
-        idx_data = index_generator.get_esrs_index(2024)
+        idx_data = index_generator.get_esrs_index(2025)
         readiness = index_generator.calculate_readiness_score(idx_data)
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("CO2 Scope 1", f"{s1:.1f} t")
-    col2.metric("CO2 Scope 2", f"{s2:.1f} t")
-    col3.metric("CO2 Scope 3", f"{s3:.1f} t")
-    col4.metric("Readiness Score", f"{readiness:.0f}%")
+    # Grid Layout with new Cards
+    st.markdown('<div class="skill-grid-container">', unsafe_allow_html=True)
+    c1, c2, c3, c4 = st.columns(4)
+    with c1: skill_card("Scope 1 (Ton)", f"{s1:.1f}")
+    with c2: skill_card("Scope 2 (Ton)", f"{s2:.1f}")
+    with c3: skill_card("Scope 3 (Ton)", f"{s3:.1f}")
+    with c4: skill_card("Readiness Score", f"{readiness:.0f}%", "+5%") 
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="css-card">', unsafe_allow_html=True)
+    # Chart
+    st.markdown('<div class="skill-card">', unsafe_allow_html=True)
     st.subheader("Klimatfördelning")
-    fig = px.bar(x=["Scope 1", "Scope 2", "Scope 3"], y=[s1, s2, s3], color=["#2962FF", "#00E5FF", "#7C4DFF"], title="Ton CO2e per Scope")
-    fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black")
+    fig = px.bar(x=["Scope 1", "Scope 2", "Scope 3"], y=[s1, s2, s3], 
+                 color_discrete_sequence=["#1A33F5", "#7CF7F9", "#8A2BE2"])
+    
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)', 
+        paper_bgcolor='rgba(0,0,0,0)', 
+        font_color="#7CF7F9",
+        title_font_color="#FFFFFF"
+    )
     st.plotly_chart(fig, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
 @st.fragment
 def render_strategy():
-    st.title("Strategi & Väsentlighet")
+    skill_spotlight_header("Strategi & Väsentlighet")
     show_page_help("Dubbel Väsentlighetsanalys (DMA)", """
     Enligt lagkravet ESRS 2 räcker det inte att fråga vad intressenterna tycker är viktigt. Vi måste bedöma varje hållbarhetsfråga utifrån två perspektiv:
     
-    1.  **Impact Materiality (Y-axeln):** Hur stor påverkan har vår verksamhet på människa och miljö? (T.ex. våra konsulters arbetsmiljö).
-    2.  **Financial Materiality (X-axeln):** Hur stor finansiell risk utgör frågan för oss? (T.ex. risken att tappa kunder om vi saknar kollektivavtal eller miljöcertifiering).
-    
-    **Gör så här:** Lägg till ett ämne i formuläret nedan och bedöm det på en skala 1-5. Ämnen som hamnar i det övre högra hörnet i grafen klassas som "väsentliga" och inkluderas automatiskt i kraven för din hållbarhetsrapport.
+    1.  **Impact Materiality (Y-axeln):** Hur stor påverkan har verksamheten på människa och miljö?
+    2.  **Financial Materiality (X-axeln):** Hur stor finansiell risk utgör frågan för verksamheten?
     """)
     dma_data = dma_tool.get_dma_data()
     
@@ -286,7 +311,7 @@ def render_strategy():
         fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5])
         fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
         fig.add_vline(x=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
-        fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="white" if st.session_state['dark_mode'] else "black")
+        fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="#7CF7F9")
         st.plotly_chart(fig, use_container_width=True)
 
     with st.form("dma_form"):
@@ -301,18 +326,16 @@ def render_strategy():
 
 @st.fragment
 def render_hr():
-    st.title("HR & Social Hållbarhet")
+    skill_spotlight_header("HR & Social Hållbarhet")
     show_page_help("Skillnaden på S1 och S2", """
-    CSRD kräver att vi skiljer tydligt på personalgrupper för att kunna rapportera korrekt social påverkan:
-    
-    *   **ESRS S1 (Egen personal):** Vår interna personal (HR, sälj, administration). Här mäter vi faktorer som "Gender Pay Gap", personalomsättning och utbildningstimmar.
-    *   **ESRS S2 (Arbetare i värdekedjan):** Våra uthyrda konsulter som befinner sig hos kund. Eftersom vi delar arbetsmiljöansvaret med kunden måste vi här spåra olyckor, incidenter och dialog separat för att matcha standarden.
+    *   **ESRS S1 (Egen personal):** Vår interna personal.
+    *   **ESRS S2 (Arbetare i värdekedjan):** Våra uthyrda konsulter.
     """)
     tab1, tab2 = st.tabs(["👥 S1: Egen Personal", "📊 Historik"])
     with tab1:
-        st.markdown('<div class="css-card">', unsafe_allow_html=True)
+        st.markdown('<div class="skill-card">', unsafe_allow_html=True)
         with st.form("hr_s1"):
-            ar = st.number_input("År", 2024)
+            ar = st.number_input("År", 2025)
             c1, c2 = st.columns(2)
             kvinnor = c1.number_input("Antal Kvinnor i ledning", 0)
             man = c2.number_input("Antal Män i ledning", 0)
@@ -330,14 +353,7 @@ def render_hr():
 
 @st.fragment
 def render_governance():
-    st.title("Governance")
-    show_page_help("Styrning & Uppföljning (G1)", """
-    Det räcker inte att ha en uppförandekod (Code of Conduct). Vi måste bevisa att den efterlevs och hålls aktuell.
-    
-    *   **Policys:** Ladda upp era styrdokument och ange senaste revisionsdatum. Systemet räknar automatiskt ut när de behöver ses över nästa gång.
-    *   **Leverantörskrav:** Spåra hur stor andel av era leverantörer som signerat er kod eller genomgått en hållbarhetsbedömning.
-    *   **Incidenter:** Logga visselblåsarärenden och GDPR-incidenter för att säkerställa full spårbarhet inför revision.
-    """)
+    skill_spotlight_header("Governance")
     
     with st.form("gov_form"):
         name = st.text_input("Namn på policy")
@@ -356,39 +372,26 @@ def render_governance():
 
 @st.fragment
 def render_calc():
-    st.title("Beräkningar")
-    show_page_help("Kalkylator för Scope 3", """
-    Scope 3 är den svåraste men ofta största delen av klimatavtrycket. Vi använder två godkända metoder för att stänga ert datagap:
-    
-    1.  **Pendling (S3):** Systemet beräknar automatiskt CO2-utsläpp baserat på avståndet mellan pendlingsprofilernas hemort och kundens arbetsplats.
-    2.  **Inköp / Spend-based (S3):** För varor och tjänster (t.ex. IT-utrustning eller kontorsmaterial) där exakt leverantörsdata saknas, uppskattar vi utsläppen baserat på spenderat belopp (SEK) multiplicerat med branschspecifika emissionsfaktorer.
-    """)
+    skill_spotlight_header("Beräkningar")
     t1, t2 = st.tabs(["🚌 Pendling", "💸 Inköp (Spend)"])
     with t1:
-        show_page_help("Pendling", "Hantera personal, kundplatser och uppdrag för att beräkna pendlingsutsläpp.")
-        
         c1, c2 = st.columns([1, 1])
-        
         with c1:
-            with st.expander("👤 Hantera Pendlingsprofiler", expanded=False):
-                st.info("Skapa anonyma profiler baserat på bostadsort för att beräkna pendlingsavstånd.")
-                with st.form("add_person"):
-                    profile_ref = st.text_input("Profil-referens (t.ex. Anställd A)", placeholder="Anställd A")
-                    pnr = st.text_input("Hem-postnummer (för avståndsberäkning)")
+            with st.expander("👤 Hantera Pendlingsprofiler"):
+                 with st.form("add_person"):
+                    profile_ref = st.text_input("Profil-referens", placeholder="Anställd A")
+                    pnr = st.text_input("Hem-postnummer")
                     if st.form_submit_button("Spara Profil"):
                         with get_connection() as conn:
-                            # We repurpose the existing name fields to store the reference
                             conn.execute("INSERT INTO d_Personal (fornamn, efternamn, hem_postnummer) VALUES (?, ?, ?)", (profile_ref, "Anonym", pnr))
                             conn.commit()
-                        st.success("Profil sparad!")
+                        st.success("Sparad!")
                         st.rerun()
-                
-                with get_connection() as conn:
+                 with get_connection() as conn:
                     pers_df = pd.read_sql("SELECT person_id, fornamn as Profil, hem_postnummer as Postnummer FROM d_Personal", conn)
-                    if not pers_df.empty:
-                        st.dataframe(pers_df, hide_index=True)
+                    if not pers_df.empty: st.dataframe(pers_df, hide_index=True)
 
-            with st.expander("🏢 Hantera Kundplatser", expanded=False):
+            with st.expander("🏢 Hantera Kundplatser"):
                 with st.form("add_site"):
                     knamn = st.text_input("Kundens namn")
                     kpnr = st.text_input("Kundens postnummer")
@@ -396,16 +399,13 @@ def render_calc():
                         with get_connection() as conn:
                             conn.execute("INSERT INTO d_Kundsiter (kund_namn, postnummer) VALUES (?, ?)", (knamn, kpnr))
                             conn.commit()
-                        st.success("Kundplats sparad!")
+                        st.success("Sparad!")
                         st.rerun()
-                
                 with get_connection() as conn:
                     site_df = pd.read_sql("SELECT * FROM d_Kundsiter", conn)
-                    if not site_df.empty:
-                        st.dataframe(site_df, hide_index=True)
-
+                    if not site_df.empty: st.dataframe(site_df, hide_index=True)
         with c2:
-            with st.expander("📅 Skapa Pendlingsuppdrag", expanded=True):
+             with st.expander("📅 Skapa Pendlingsuppdrag", expanded=True):
                 with get_connection() as conn:
                     pers_list = pd.read_sql("SELECT person_id, fornamn as namn FROM d_Personal", conn)
                     site_list = pd.read_sql("SELECT kund_plats_id, kund_namn FROM d_Kundsiter", conn)
@@ -419,111 +419,71 @@ def render_calc():
                         dagar = st.slider("Arbetsdagar per vecka", 1.0, 7.0, 5.0)
                         dist = st.number_input("Manuell distans (valfri km, lämna 0 för automatik)", 0.0)
                         fard = st.selectbox("Färdmedel", ["Bil", "Elbil", "Buss", "Tåg", "Cykel", "Okänt"])
-                        
                         if st.form_submit_button("Spara Uppdrag"):
                             with get_connection() as conn:
-                                conn.execute("""
-                                    INSERT INTO f_Uppdrag (person_id, kund_plats_id, startdatum, slutdatum, dagar_per_vecka, distans_km, fardmedel)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                                """, (pid, sid, start.strftime('%Y-%m-%d'), slut.strftime('%Y-%m-%d'), dagar, dist if dist > 0 else None, fard))
+                                conn.execute("INSERT INTO f_Uppdrag (person_id, kund_plats_id, startdatum, slutdatum, dagar_per_vecka, distans_km, fardmedel) VALUES (?, ?, ?, ?, ?, ?, ?)", (pid, sid, start.strftime('%Y-%m-%d'), slut.strftime('%Y-%m-%d'), dagar, dist if dist > 0 else None, fard))
                                 conn.commit()
-                            st.success("Uppdrag sparat!")
+                            st.success("Sparad!")
                             st.rerun()
-                else:
-                    st.warning("Skapa pendlingsprofiler och kundplatser först.")
-
+        
         st.markdown("---")
-        st.subheader("Kör Beräkningar")
         if st.button("Kör pendlingsanalys", type="primary"):
             with get_connection() as conn:
                 res = scope3_pendling.calculate_all_consultants(conn)
-                if 'error' in res:
-                    st.error(f"Ett fel uppstod: {res['error']}")
-                else:
-                    st.success(f"Beräknat {res['antal_uppdrag']} nya uppdrag. Totalt {res['total_co2_ton']:.2f} ton CO2.")
+                if 'error' in res: st.error(res['error'])
+                else: st.success(f"Klar! {res['total_co2_ton']:.2f} ton CO2.")
         
         with get_connection() as conn:
-            calc_df = pd.read_sql("""
-                SELECT p.fornamn as Profil, k.kund_namn as Site, 
-                       b.totalt_co2_kg as 'CO2 (kg)', b.datakvalitet as Kvalitet
-                FROM f_Pendling_Beraknad b
-                JOIN f_Uppdrag u ON b.uppdrag_id = u.uppdrag_id
-                JOIN d_Personal p ON u.person_id = p.person_id
-                JOIN d_Kundsiter k ON u.kund_plats_id = k.kund_plats_id
-            """, conn)
-            if not calc_df.empty:
-                st.dataframe(calc_df, hide_index=True, use_container_width=True)
+            calc_df = pd.read_sql("SELECT p.fornamn as Profil, k.kund_namn as Site, b.totalt_co2_kg as 'CO2 (kg)', b.datakvalitet as Kvalitet FROM f_Pendling_Beraknad b JOIN f_Uppdrag u ON b.uppdrag_id = u.uppdrag_id JOIN d_Personal p ON u.person_id = p.person_id JOIN d_Kundsiter k ON u.kund_plats_id = k.kund_plats_id", conn)
+            if not calc_df.empty: st.dataframe(calc_df, hide_index=True, use_container_width=True)
 
     with t2:
-        show_page_help("Inköp (Spend)", "Registrera inköp av varor och tjänster för att beräkna Scope 3 utsläpp baserat på spenderat belopp.")
         with st.form("spend_form"):
             c1, c2, c3 = st.columns(3)
             cat = c1.selectbox("Kategori", scope3_spend.get_categories())
-            prod = c2.text_input("Beskrivning / Produkt", placeholder="T.ex. 5st Laptops")
+            prod = c2.text_input("Beskrivning / Produkt")
             sek = c3.number_input("Totalt Belopp (SEK)", 0.0, step=100.0)
-            
             if st.form_submit_button("Spara inköp"):
                 if sek > 0:
-                    scope3_spend.add_spend_item(cat, "", prod, sek, "2024")
-                    st.success("Inköp sparat!")
+                    scope3_spend.add_spend_item(cat, "", prod, sek, "2025")
+                    st.success("Sparad!")
                     st.rerun()
-                else:
-                    st.warning("Ange ett belopp större än 0.")
-        
-        summ = scope3_spend.get_spend_summary("2024")
-        if not summ.empty: 
-            st.subheader("Sammanställning per Kategori")
-            st.dataframe(summ, hide_index=True, use_container_width=True)
-            
-            st.subheader("Senaste Inmatningar")
-            with get_connection() as conn:
-                items = pd.read_sql("SELECT created_date as Datum, category as Kategori, product_name as Beskrivning, spend_sek as Belopp, co2e_tonnes as 'CO2 (ton)' FROM f_Scope3_Calculations WHERE reporting_period = '2024' ORDER BY id DESC LIMIT 10", conn)
-                st.dataframe(items, hide_index=True, use_container_width=True)
+        summ = scope3_spend.get_spend_summary("2025")
+        if not summ.empty: st.dataframe(summ, hide_index=True, use_container_width=True)
 
 @st.fragment
 def render_reports():
-    st.title("Rapporter")
-    show_page_help("Från berättelse till Audit Trail", """
-    Inför en extern revision räcker det inte med en färdig PDF. Revisorn behöver se "den digitala tråden" – hur en siffra i rapporten hänger ihop med den ursprungliga datakällan.
-    
-    *   **CSRD PDF:** Genererar en textrapport strukturerad enligt ESRS-standarderna.
-    *   **ESRS Index:** Vår digitala "Gap-analys". Den mappar varje lagkrav mot vår faktiska data i databasen för att snabbt se vad som saknas.
-    """)
+    skill_spotlight_header("Rapporter")
     t1, t2 = st.tabs(["📄 CSRD PDF", "🔍 ESRS Index"])
     with t1:
         if st.button("Generera Fullständig PDF"):
             with get_connection() as conn:
-                path = report_csrd.generate_csrd_report(conn, 2024)
-                with open(path, "rb") as f: st.download_button("Ladda ner PDF", f, file_name="ESG_Report_2024.pdf")
+                path = report_csrd.generate_csrd_report(conn, 2025)
+                with open(path, "rb") as f: st.download_button("Ladda ner PDF", f, file_name="ESG_Report_2025.pdf")
     with t2:
-        idx_df = index_generator.get_esrs_index(2024)
+        idx_df = index_generator.get_esrs_index(2025)
         st.dataframe(idx_df, hide_index=True, use_container_width=True)
 
 @st.fragment
 def render_settings():
-    st.title("Inställningar")
-    t1, t2, t3 = st.tabs(["💾 Datahantering", "🎨 Vy & Tema", "📤 Import"])
+    skill_spotlight_header("Inställningar")
+    t1, t2 = st.tabs(["💾 Datahantering", "📤 Import"])
     with t1:
         with open(DB_PATH, "rb") as f:
             st.download_button(label="Ladda ner Systemfil (.db)", data=f, file_name="ESG_Data.db", type="primary", use_container_width=True)
     with t2:
-        dark = st.toggle("Mörkt läge", value=st.session_state.dark_mode)
-        if dark != st.session_state.dark_mode:
-            st.session_state.dark_mode = dark
-            st.rerun()
-    with t3:
         st.file_uploader("Importera data", type=["xlsx", "pdf", "docx"])
 
 # ============================================
-# 5. MAIN ROUTING
+# 6. SIDEBAR & ROUTING
 # ============================================
 with st.sidebar:
-    # Sidebar Header
+    # Sidebar Header with secret-compliant branding
     st.markdown("""
-        <div style="text-align: center; padding: 10px 0 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
-            <h1 style="margin: 0; font-weight: 800; letter-spacing: 3px; color: #FFFFFF; font-size: 2.2rem;">ESG</h1>
-            <p style="margin: 0; color: #00E5FF; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 400;">
-                Hållbarhetsindex
+        <div style="text-align: center; padding: 10px 0 20px 0; border-bottom: 1px solid rgba(124, 247, 249, 0.1); margin-bottom: 20px;">
+            <h1 style="margin: 0; font-weight: 800; letter-spacing: -1px; color: #FFFFFF; font-size: 2.2rem;">ESG</h1>
+            <p style="margin: 0; color: #7CF7F9; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 500;">
+                Workspace
             </p>
         </div>
     """, unsafe_allow_html=True)
@@ -536,22 +496,17 @@ with st.sidebar:
             
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # Simplified Profile Card
-    if st.session_state['dark_mode']:
-        card_bg, card_border, text_main, text_muted = "#161b22", "#30363d", "#FFFFFF", "#8b949e"
-    else:
-        card_bg, card_border, text_main, text_muted = "#f6f8fa", "#d0d7de", "#171717", "#57606a"
-        
+    # Profile Card (Dark theme)
     st.markdown(f"""
-        <div style="background-color: {card_bg}; border: 1px solid {card_border}; border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="background-color: #0F072D; border: 1px solid rgba(124, 247, 249, 0.1); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
             <div style="display: flex; align-items: center;">
-                <div style="width: 32px; height: 32px; background-color: #2962FF; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 10px; font-size: 14px;">J</div>
+                <div style="width: 32px; height: 32px; background-color: #1A33F5; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin-right: 10px; font-size: 14px;">J</div>
                 <div>
-                    <div style="color: {text_main}; font-weight: 600; font-size: 13px; line-height: 1.2;">J.M.</div>
-                    <div style="color: #00E5FF; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Administrator</div>
+                    <div style="color: #FFFFFF; font-weight: 600; font-size: 13px; line-height: 1.2;">J.M.</div>
+                    <div style="color: #7CF7F9; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Admin</div>
                 </div>
             </div>
-            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 11px; font-weight: 600; padding: 4px 8px; border: 1px solid #FF4B4B; border-radius: 4px; text-transform: uppercase;">Logga ut</a>
+            <a href="?logout=1" target="_self" style="color: #FF4B4B; text-decoration: none; font-size: 11px; font-weight: 600;">LOGGA UT</a>
         </div>
     """, unsafe_allow_html=True)
 
