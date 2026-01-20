@@ -192,6 +192,66 @@ def skill_card(title, value, delta=None):
     </div>
     """, unsafe_allow_html=True)
 
+def show_strategic_context(module_name):
+    """Visar strategisk affärsnytta kopplat till de 5 pelarna."""
+    
+    contexts = {
+        "Översikt": {
+            "risk": "Ger en helhetsbild av bolagets ESG-exponering, vilket minimerar risken för strategiska överraskningar från investerare eller kunder.",
+            "effekt": "Centraliserad data minskar tiden för manuell rapportering och dubbelarbete vid upphandlingar.",
+            "lag": "Säkerställer att ledningen har den överblick som krävs enligt aktiebolagslagens krav på bolagsstyrning.",
+            "konk": "En transparent hållbarhetsprofil är idag en 'licence to operate' för att behålla och vinna stora kunder.",
+            "hall": "Möjliggör datadrivna beslut för att styra hela verksamheten mot långsiktiga hållbarhetsmål."
+        },
+        "Strategi (CSRD)": {
+            "risk": "Dubbel väsentlighetsanalys (DMA) identifierar dolda finansiella risker i klimatförändringar och leverantörskedjor.",
+            "effekt": "Fokuserar resurserna på de frågor som faktiskt spelar roll, istället för att sprida insatserna tunt.",
+            "lag": "Kärnan i CSRD (ESRS 2). Utan denna analys är ingen del av hållbarhetsrapporten laglig.",
+            "konk": "Visar mognad och proaktivitet, vilket bygger förtroende hos banker (lägre ränta) och investerare.",
+            "hall": "Säkerställer att affärsmodellen är robust och relevant även i en koldioxidneutral framtid."
+        },
+        "HR-Data": {
+            "risk": "Systematisk uppföljning av arbetsmiljö minskar risken för dyra sjukskrivningar och arbetsrättsliga tvister.",
+            "effekt": "Friska medarbetare med rätt kompetens är grunden för hög debiteringsgrad och lönsamhet.",
+            "lag": "Uppfyller kraven i ESRS S1 (Egen personal) samt Diskrimineringslagen (Lönekartläggning).",
+            "konk": "Stärkt Employer Brand attraherar topptalanger, vilket är den viktigaste tillgången i ett konsultbolag.",
+            "hall": "Skapar en inkluderande arbetsplats som bidrar till social stabilitet och minskad ojämlikhet."
+        },
+        "Governance": {
+            "risk": "Tydliga policys och visselblåsarsystem skyddar mot korruption, böter och varumärkesskador.",
+            "effekt": "Tydliga ansvarsområden och processer (SOP:er) minskar intern byråkrati och osäkerhet.",
+            "lag": "Krav enligt ESRS G1 (Affärsetik) samt Visselblåsarlagen.",
+            "konk": "Kunder ställer allt högre krav på etiska riktlinjer i sina leverantörskoder (CoC).",
+            "hall": "God bolagsstyrning är fundamentet för att långsiktigt kunna leverera på både miljö- och sociala mål."
+        },
+        "Beräkningar": {
+            "risk": "Genom att mäta Scope 3 minskar risken för att bli utbytt av kunder som måste redovisa sina leverantörers utsläpp.",
+            "effekt": "Identifierar 'hotspots' i inköp och resor där kostnadsbesparingar ofta går hand i hand med utsläppsminskningar.",
+            "lag": "Uppfyller ESRS E1-6 (Gross Scopes 1, 2, 3 GHG emissions).",
+            "konk": "Kan erbjuda kunder klimatneutrala konsulttjänster, en unik differentiator på marknaden.",
+            "hall": "Konkretiserar miljöpåverkan och flyttar fokus från 'grönt prat' till mätbar action."
+        },
+        "Rapporter": {
+            "risk": "Spårbarhet och audit trails minskar risken för anmärkningar vid extern revision.",
+            "effekt": "Automatiserad rapportgenerering sparar hundratals timmar varje år jämfört med Excel-arbete.",
+            "lag": "Säkerställer att den lagstadgade hållbarhetsrapporten (ÅRL) håller rätt format och kvalitet.",
+            "konk": "En professionell rapport kan användas direkt i marknadsföring och säljpitchar.",
+            "hall": "Transparens driver ansvar. Publicerade siffror skapar ett positivt tryck på organisationen att förbättra sig."
+        }
+    }
+
+    ctx = contexts.get(module_name, contexts["Översikt"])
+
+    with st.expander(f"💎 Strategiskt Affärsvärde: {module_name}", expanded=False):
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown(f"**🛡️ Riskminimering**\n\n{ctx['risk']}")
+            st.markdown(f"**⚖️ Efterlevnad (Compliance)**\n\n{ctx['lag']}")
+            st.markdown(f"**🌱 Hållbarhet**\n\n{ctx['hall']}")
+        with c2:
+            st.markdown(f"**🚀 Effektivitet**\n\n{ctx['effekt']}")
+            st.markdown(f"**🏆 Konkurrensfördel**\n\n{ctx['konk']}")
+
 
 # ============================================
 # 4. DB INIT
@@ -258,6 +318,7 @@ if 'page' not in st.session_state: st.session_state.page = "Översikt"
 def render_overview():
     # Header & Ingress
     skill_spotlight_header("Hållbarhetsrapport 2025", "ESG Workspace")
+    show_strategic_context("Översikt")
     skill_ingress("""
     Människor förändras. De utvecklas, och söker nya utmaningar. 
     Detta verktyg hjälper oss att mäta och förstå den förändringen genom data, 
@@ -299,6 +360,7 @@ def render_overview():
 @st.fragment
 def render_strategy():
     skill_spotlight_header("Strategi & Väsentlighet")
+    show_strategic_context("Strategi (CSRD)")
     show_page_help("Dubbel Väsentlighetsanalys (DMA)", """
     Enligt lagkravet ESRS 2 räcker det inte att fråga vad intressenterna tycker är viktigt. Vi måste bedöma varje hållbarhetsfråga utifrån två perspektiv:
     
@@ -327,6 +389,7 @@ def render_strategy():
 @st.fragment
 def render_hr():
     skill_spotlight_header("HR & Social Hållbarhet")
+    show_strategic_context("HR-Data")
     show_page_help("Skillnaden på S1 och S2", """
     *   **ESRS S1 (Egen personal):** Vår interna personal.
     *   **ESRS S2 (Arbetare i värdekedjan):** Våra uthyrda konsulter.
@@ -354,6 +417,7 @@ def render_hr():
 @st.fragment
 def render_governance():
     skill_spotlight_header("Governance")
+    show_strategic_context("Governance")
     
     with st.form("gov_form"):
         name = st.text_input("Namn på policy")
@@ -373,6 +437,7 @@ def render_governance():
 @st.fragment
 def render_calc():
     skill_spotlight_header("Beräkningar")
+    show_strategic_context("Beräkningar")
     t1, t2 = st.tabs(["🚌 Pendling", "💸 Inköp (Spend)"])
     with t1:
         c1, c2 = st.columns([1, 1])
@@ -454,6 +519,7 @@ def render_calc():
 @st.fragment
 def render_reports():
     skill_spotlight_header("Rapporter")
+    show_strategic_context("Rapporter")
     t1, t2 = st.tabs(["📄 CSRD PDF", "🔍 ESRS Index"])
     with t1:
         if st.button("Generera Fullständig PDF"):
