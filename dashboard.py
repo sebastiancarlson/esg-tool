@@ -157,26 +157,43 @@ st.markdown("""
     /* --- 7. BACKGROUND SHAPES (People Spotlight) --- */
     @keyframes float {
         0% { transform: translate(0, 0) rotate(0deg); }
-        33% { transform: translate(30px, -50px) rotate(10deg); }
+        33% { transform: translate(30px, -30px) rotate(10deg); }
         66% { transform: translate(-20px, 20px) rotate(-5deg); }
         100% { transform: translate(0, 0) rotate(0deg); }
     }
 
     .spotlight-shape {
         position: fixed;
-        z-index: 0; /* Behind content */
-        opacity: 0.4; /* Subtle effect */
-        pointer-events: none; /* Let clicks pass through */
-        filter: blur(60px); /* Soften edges like the reference */
-        animation: float 20s infinite ease-in-out;
+        z-index: 0;
+        opacity: 0.15; /* Low opacity to blend with dark mode */
+        pointer-events: none;
+        /* No blur, solid shapes as per reference */
+    }
+    
+    .shape-aqua {
+        background-color: #7CF7F9;
+        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        animation: float 25s infinite ease-in-out;
+    }
+    
+    .shape-violet {
+        background-color: #8A2BE2;
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        animation: float 20s infinite ease-in-out reverse;
+    }
+    
+    .shape-blue {
+        background-color: #1A33F5;
+        border-radius: 50% 50% 20% 80% / 25% 80% 20% 75%;
+        animation: float 30s infinite ease-in-out;
     }
 
 </style>
 
 <!-- BACKGROUND SHAPES HTML -->
-<div class="spotlight-shape" style="top: -10%; left: -10%; width: 600px; height: 600px; background: radial-gradient(circle, #7CF7F9 0%, transparent 70%); animation-delay: 0s;"></div>
-<div class="spotlight-shape" style="top: 20%; right: -10%; width: 500px; height: 500px; background: radial-gradient(circle, #8A2BE2 0%, transparent 70%); animation-delay: -5s;"></div>
-<div class="spotlight-shape" style="bottom: -10%; left: 30%; width: 700px; height: 700px; background: radial-gradient(circle, #1A33F5 0%, transparent 70%); animation-delay: -10s;"></div>
+<div class="spotlight-shape shape-aqua" style="top: -10%; left: -5%; width: 500px; height: 500px;"></div>
+<div class="spotlight-shape shape-violet" style="top: 15%; right: -5%; width: 450px; height: 450px;"></div>
+<div class="spotlight-shape shape-blue" style="bottom: -15%; left: 35%; width: 600px; height: 600px;"></div>
 
 """, unsafe_allow_html=True)
 
