@@ -172,13 +172,13 @@ def skill_spotlight_header(title, subtitle=None):
       <path fill="#8A2BE2" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-5.3C93.5,8.6,82.2,21.5,70.6,32.3C59,43.1,47.1,51.8,35.1,59.3C23.1,66.8,11,73.1,-2.4,77.3C-15.8,81.5,-30.5,83.6,-43.3,77.7C-56.1,71.8,-67,57.9,-75.4,43.4C-83.8,28.9,-89.7,13.8,-88.3,-0.8C-86.9,-15.4,-78.2,-29.5,-67.2,-41.2C-56.2,-52.9,-42.9,-62.2,-29.6,-69.8C-16.3,-77.4,-3,-83.3,10.2,-82.5L23.4,-81.7Z" transform="translate(100 100)" />
     </svg>
     """
-    st.markdown(f"""
+    st.html(f"""
     <div style="position:relative; padding: 20px 0 40px 0;">
         {svg_blob}
-        <h1 style="position:relative; z-index:1; margin-bottom:0; font-size: 3rem;">{title}</h1>
+        <h1 style="position:relative; z-index:1; margin-bottom:0; font-size: 3rem; color: #FFFFFF !important;">{title}</h1>
         {f'<p style="font-weight:500; color:#7CF7F9; margin-top:0; font-size: 1.1rem; text-transform:uppercase; letter-spacing:2px;">{subtitle}</p>' if subtitle else ''}
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 def skill_card(title, value, delta=None):
     """Skapar ett kort enligt designsystemet (Dark Mode)"""
