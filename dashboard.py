@@ -154,46 +154,49 @@ st.markdown("""
         margin: 20px 0;
     }
 
-    /* --- 7. BACKGROUND SHAPES (People Spotlight) --- */
-    @keyframes float {
-        0% { transform: translate(0, 0) rotate(0deg); }
-        33% { transform: translate(30px, -30px) rotate(10deg); }
-        66% { transform: translate(-20px, 20px) rotate(-5deg); }
-        100% { transform: translate(0, 0) rotate(0deg); }
+    /* --- 7. BACKGROUND SHAPES (People Spotlight - SVG) --- */
+    @keyframes rotate-blob {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.1); }
+        100% { transform: rotate(360deg) scale(1); }
     }
 
-    .spotlight-shape {
+    .spotlight-container {
         position: fixed;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
         z-index: 0;
-        opacity: 0.15; /* Low opacity to blend with dark mode */
         pointer-events: none;
-        /* No blur, solid shapes as per reference */
+        overflow: hidden;
     }
-    
-    .shape-aqua {
-        background-color: #7CF7F9;
-        border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-        animation: float 25s infinite ease-in-out;
-    }
-    
-    .shape-violet {
-        background-color: #8A2BE2;
-        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-        animation: float 20s infinite ease-in-out reverse;
-    }
-    
-    .shape-blue {
-        background-color: #1A33F5;
-        border-radius: 50% 50% 20% 80% / 25% 80% 20% 75%;
-        animation: float 30s infinite ease-in-out;
+
+    .blob-svg {
+        position: absolute;
+        opacity: 0.15;
+        animation: rotate-blob 60s linear infinite;
     }
 
 </style>
 
 <!-- BACKGROUND SHAPES HTML -->
-<div class="spotlight-shape shape-aqua" style="top: -10%; left: -5%; width: 500px; height: 500px;"></div>
-<div class="spotlight-shape shape-violet" style="top: 15%; right: -5%; width: 450px; height: 450px;"></div>
-<div class="spotlight-shape shape-blue" style="bottom: -15%; left: 35%; width: 600px; height: 600px;"></div>
+<div class="spotlight-container">
+    <!-- Aqua Blob (Top Left) -->
+    <svg class="blob-svg" style="top: -10%; left: -10%; width: 50vw; max-width: 600px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#7CF7F9" d="M65.4,-37.9C79.2,-13.9,81,17,68.1,38C55.2,59.1,27.6,70.5,1.5,69.6C-24.6,68.8,-49.3,55.7,-56,38.2C-62.6,20.7,-51.3,-1.2,-39,-24.4C-26.7,-47.6,-13.3,-72,6.2,-75.6C25.8,-79.2,51.6,-62,65.4,-37.9Z" transform="translate(100 100)" />
+    </svg>
+    
+    <!-- Violet Blob (Top Right) -->
+    <svg class="blob-svg" style="top: 10%; right: -5%; width: 40vw; max-width: 500px; animation-duration: 80s; animation-direction: reverse;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#8A2BE2" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" />
+    </svg>
+    
+    <!-- Blue Blob (Bottom Left/Center) -->
+    <svg class="blob-svg" style="bottom: -15%; left: 20%; width: 55vw; max-width: 700px; animation-duration: 100s;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#1A33F5" d="M51.8,-50.6C64.7,-39,71,-19.5,72.2,1.2C73.4,21.9,69.6,43.8,56.7,59.3C43.8,74.7,21.9,83.7,2.4,81.3C-17.2,78.9,-34.3,65.2,-50.7,49.8C-67.1,34.3,-82.7,17.2,-82.8,-0.1C-82.8,-17.3,-67.4,-34.7,-51.1,-46.3C-34.7,-57.9,-17.3,-63.8,1.1,-64.8C19.5,-65.9,39,-62.2,51.8,-50.6Z" transform="translate(100 100)" />
+    </svg>
+</div>
 
 """, unsafe_allow_html=True)
 
