@@ -154,36 +154,26 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 
+    /* --- 6. BACKGROUND BLOB (The reliable way) --- */
+    /* Violet blob SVG encoded as data URI */
+    .stApp {
+        background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%238A2BE2" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E');
+        background-repeat: no-repeat;
+        background-position: right -10% top -10%; /* Position top right, partly off screen */
+        background-size: 50vw; /* Size */
+        background-attachment: fixed;
+    }
+    /* Add a pseudo-element to control opacity/blur of the background image if needed, 
+       but direct background-image is simpler. We rely on the SVG fill color opacity here. 
+       Let's adjust the SVG fill opacity directly in the URL for subtle effect */
+    .stApp {
+        background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%238A2BE2" fill-opacity="0.3" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E');
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
-# Static Background Shapes using pure HTML component (renders in iframe, won't leak text)
-import streamlit.components.v1 as components
-components.html("""
-<style>
-    .spotlight-container {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        z-index: 1; /* Low positive z-index to sit on top of background but behind Streamlit elements (usually z-index > 99) */
-        pointer-events: none;
-        overflow: hidden;
-    }
-    .blob-svg {
-        position: absolute;
-        opacity: 0.4; /* Slightly visible */
-        filter: blur(40px); /* Soft glow effect */
-    }
-</style>
-<div class="spotlight-container">
-    <!-- Single Violet Blob (Top Right) -->
-    <svg class="blob-svg" style="top: -20%; right: -10%; width: 50vw; max-width: 600px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#8A2BE2" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" />
-    </svg>
-</div>
-""", height=0, width=0) # Height 0 because it's fixed position background
+# Removed the components.html block as we are now using CSS background-image
 
 # ============================================
 # 3. HELPERS
