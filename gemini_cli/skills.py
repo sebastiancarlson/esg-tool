@@ -77,11 +77,26 @@ def read_file(file_path: str) -> str:
     Args:
         file_path: The path to the file to read.
     """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return f.read()
-    except Exception as e:
-        return f"Error reading file: {e}"
+    import os
+    
+    # List of paths to try
+    paths_to_try = [
+        file_path,
+        os.path.abspath(file_path),
+        os.path.join(os.getcwd(), file_path),
+        file_path.replace("/", "\\"), # Try Windows style
+        file_path.replace("\\", "/")  # Try Unix style
+    ]
+    
+    for path in paths_to_try:
+        if os.path.exists(path) and os.path.isfile(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception as e:
+                return f"Error reading file at {path}: {e}"
+                
+    return f"Error: File not found. Tried: {', '.join(set(paths_to_try))}"
 
 @skill
 def write_file(file_path: str, content: str) -> str:
@@ -94,8 +109,10 @@ def write_file(file_path: str, content: str) -> str:
     """
     import os
     try:
-        # Create directories if they don't exist
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        # Create directories if they don't exist and if the path has a directory component
+        directory = os.path.dirname(file_path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
         
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
