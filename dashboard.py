@@ -566,18 +566,56 @@ def render_reports():
     t1, t2 = st.tabs(["📄 CSRD PDF/Excel", "🔍 ESRS Index"])
     with t1:
         st.info("Klicka nedan för att generera en Excel-rapport med all data för CSRD (Scope 1, 2, 3).")
-        if st.button("Generera CSRD Rapport (Excel)"):
-            try:
-                excel_file = report_csrd.generate_csrd_report()
-                st.download_button(
-                    label="Ladda ner Excel-rapport",
-                    data=excel_file,
-                    file_name=f"CSRD_Report_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-                st.success("Rapport genererad!")
-            except Exception as e:
-                st.error(f"Kunde inte generera rapport: {e}")
+        col_excel, col_pdf = st.columns(2) # Create two columns for buttons
+        with col_excel:
+            if st.button("Generera CSRD Rapport (Excel)"):
+                try:
+                    excel_file = report_csrd.generate_csrd_report()
+                    st.download_button(
+                        label="Ladda ner Excel-rapport",
+                        data=excel_file,
+                        file_name=f"CSRD_Report_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                    st.success("Excel Rapport genererad!")
+                except Exception as e:
+                    st.error(f"Kunde inte generera Excel-rapport: {e}")
+        with col_pdf:
+            st.info("Klicka nedan för att generera en PDF-sammanfattning av CSRD-rapporten.")
+            if st.button("Generera CSRD Sammanfattning (PDF)"):
+                try:
+                    # Fetch summary data (re-using logic from generate_csrd_report)
+                    conn = get_connection()
+                    try:
+                        scope1_df = pd.read_sql("SELECT * FROM f_Drivmedel", conn)
+                    except Exception:
+                        scope1_df = pd.DataFrame(columns=["datum", "volym_liter", "drivmedelstyp", "co2_kg"])
+                        
+                    try:
+                        scope2_df = pd.read_sql("SELECT * FROM elforbrukning", conn) 
+                    except Exception:
+                        scope2_df = pd.DataFrame(columns=["datum", "kWh", "kostnad", "co2_kg"])
+
+                    summary_data = {
+                        "Scope": ["Scope 1", "Scope 2", "Scope 3"],
+                        "Total CO2e (kg)": [
+                            scope1_df["co2_kg"].sum() if not scope1_df.empty else 0,
+                            scope2_df["co2_kg"].sum() if not scope2_df.empty else 0,
+                            0 # Placeholder until Scope 3 tables are confirmed
+                        ]
+                    }
+                    summary_df = pd.DataFrame(summary_data)
+
+                    pdf_file = report_csrd.generate_pdf_summary(summary_df)
+                    st.download_button(
+                        label="Ladda ner PDF-sammanfattning",
+                        data=pdf_file,
+                        file_name=f"CSRD_Summary_{datetime.now().strftime('%Y-%m-%d')}.pdf",
+                        mime="application/pdf"
+                    )
+                    st.success("PDF Sammanfattning genererad!")
+                except Exception as e:
+                    st.error(f"Kunde inte generera PDF-sammanfattning: {e}")
     with t2:
         idx_df = index_generator.get_esrs_index(2025)
         st.dataframe(idx_df, hide_index=True, use_container_width=True)
