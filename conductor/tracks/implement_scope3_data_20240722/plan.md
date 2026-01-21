@@ -6,9 +6,9 @@ This plan outlines the steps to implement expanded Scope 3 data collection and c
     - [x] Sub-task: Research emission factors for Business Travel (e.g., air, rail, car)
     - [x] Sub-task: Research emission factors for Waste Generated (e.g., landfill, recycling)
     - [x] Sub-task: Research emission factors for a few key Purchased Goods & Services categories
-- [ ] Task: Update database schema for new Scope 3 data
+- [x] Task: Update database schema for new Scope 3 data
     - [x] Sub-task: Add tables/columns for Business Travel data
-    - [ ] Sub-task: Add tables/columns for Waste data
+    - [x] Sub-task: Add tables/columns for Waste data
     - [ ] Sub-task: Add tables/columns for Purchased Goods & Services data
 - [ ] Task: Implement Python calculation logic for new Scope 3 categories
     - [ ] Sub-task: Create `calculate_business_travel_emissions` function
