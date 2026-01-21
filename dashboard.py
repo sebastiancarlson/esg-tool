@@ -97,21 +97,23 @@ st.markdown("""
         line-height: 1.6;
     }
     
-    /* --- 2. CARDS (Darker Indigo with Aqua Border/Glow) --- */
+    /* --- 2. CARDS (Cleaner, refined look) --- */
     .skill-card {
         background: var(--skill-dark-indigo);
-        padding: 24px;
-        border-radius: 20px;
-        border: 1px solid rgba(124, 247, 249, 0.1); /* Aqua border low opacity */
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        padding: 20px; /* Slightly less padding */
+        border-radius: 16px;
+        border: 1px solid rgba(124, 247, 249, 0.05); /* Thinner, subtler border */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Softer shadow */
+        margin-bottom: 30px; /* Add spacing below cards */
     }
     
     .skill-card h3 {
         color: var(--skill-aqua) !important;
-        opacity: 0.7;
-        font-size: 0.9rem;
+        opacity: 0.8;
+        font-size: 0.85rem;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        margin-bottom: 15px; /* Space between title and content */
     }
     
     .skill-card div {
