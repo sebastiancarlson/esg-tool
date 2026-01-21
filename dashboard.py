@@ -167,24 +167,19 @@ components.html("""
         height: 100vh;
         top: 0;
         left: 0;
-        z-index: -1; /* Behind everything */
+        z-index: 1; /* Low positive z-index to sit on top of background but behind Streamlit elements (usually z-index > 99) */
         pointer-events: none;
         overflow: hidden;
-        background-color: #150B3F; /* Ensure background match */
     }
     .blob-svg {
         position: absolute;
-        opacity: 0.15;
+        opacity: 0.4; /* Slightly visible */
+        filter: blur(40px); /* Soft glow effect */
     }
 </style>
 <div class="spotlight-container">
-    <!-- Aqua Blob (Top Left - Static) -->
-    <svg class="blob-svg" style="top: -5%; left: -5%; width: 40vw; max-width: 500px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#7CF7F9" d="M65.4,-37.9C79.2,-13.9,81,17,68.1,38C55.2,59.1,27.6,70.5,1.5,69.6C-24.6,68.8,-49.3,55.7,-56,38.2C-62.6,20.7,-51.3,-1.2,-39,-24.4C-26.7,-47.6,-13.3,-72,6.2,-75.6C25.8,-79.2,51.6,-62,65.4,-37.9Z" transform="translate(100 100)" />
-    </svg>
-    
-    <!-- Violet Blob (Bottom Right - Static) -->
-    <svg class="blob-svg" style="bottom: -10%; right: -10%; width: 45vw; max-width: 600px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <!-- Single Violet Blob (Top Right) -->
+    <svg class="blob-svg" style="top: -20%; right: -10%; width: 50vw; max-width: 600px;" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
         <path fill="#8A2BE2" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" />
     </svg>
 </div>
