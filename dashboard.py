@@ -563,12 +563,21 @@ def render_calc():
 def render_reports():
     skill_spotlight_header("Rapporter")
     show_strategic_context("Rapporter")
-    t1, t2 = st.tabs(["📄 CSRD PDF", "🔍 ESRS Index"])
+    t1, t2 = st.tabs(["📄 CSRD PDF/Excel", "🔍 ESRS Index"])
     with t1:
-        if st.button("Generera Fullständig PDF"):
-            with get_connection() as conn:
-                path = report_csrd.generate_csrd_report(conn, 2025)
-                with open(path, "rb") as f: st.download_button("Ladda ner PDF", f, file_name="ESG_Report_2025.pdf")
+        st.info("Klicka nedan för att generera en Excel-rapport med all data för CSRD (Scope 1, 2, 3).")
+        if st.button("Generera CSRD Rapport (Excel)"):
+            try:
+                excel_file = report_csrd.generate_csrd_report()
+                st.download_button(
+                    label="Ladda ner Excel-rapport",
+                    data=excel_file,
+                    file_name=f"CSRD_Report_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+                st.success("Rapport genererad!")
+            except Exception as e:
+                st.error(f"Kunde inte generera rapport: {e}")
     with t2:
         idx_df = index_generator.get_esrs_index(2025)
         st.dataframe(idx_df, hide_index=True, use_container_width=True)

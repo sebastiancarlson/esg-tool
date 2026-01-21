@@ -63,9 +63,17 @@ class GeminiClient:
     def start_chat(self, model_name: str, history: list = None, system_instruction: str = None, tools: list = None):
         """Starts a chat session."""
         try:
-            model = genai.GenerativeModel(model_name, system_instruction=system_instruction, tools=tools)
-            # enable_automatic_function_calling=True allows the SDK to execute the code and return the result to the model automatically.
-            chat = model.start_chat(history=history or [], enable_automatic_function_calling=True if tools else False)
+            # Filter tools to ensure only callable functions are passed
+            valid_tools = [t for t in (tools or []) if callable(t)]
+            
+            # Using the GenerativeModel with tools but without automatic calling
+            model = genai.GenerativeModel(
+                model_name=model_name, 
+                system_instruction=system_instruction, 
+                tools=valid_tools if valid_tools else None
+            )
+            
+            chat = model.start_chat(history=history or [])
             return chat
         except Exception as e:
             console.print(f"[bold red]Error starting chat:[/bold red] {e}")

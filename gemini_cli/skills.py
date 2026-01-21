@@ -55,7 +55,7 @@ def calculate_emissions(fuel_type: str, liters: float) -> str:
     return f"{co2:.2f} kg CO2e"
 
 @skill
-def list_directory_contents(path: str = ".") -> str:
+def list_directory(path: str = ".") -> str:
     """
     Lists the files and folders in a specific directory.
     
@@ -68,3 +68,55 @@ def list_directory_contents(path: str = ".") -> str:
         return f"Contents of {path}: {', '.join(items[:50])}" + ("..." if len(items) > 50 else "")
     except Exception as e:
         return f"Error listing directory: {e}"
+
+@skill
+def read_file(file_path: str) -> str:
+    """
+    Reads and returns the content of a specified file.
+    
+    Args:
+        file_path: The path to the file to read.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading file: {e}"
+
+@skill
+def write_file(file_path: str, content: str) -> str:
+    """
+    Writes content to a specified file. Creates directories if they don't exist.
+    
+    Args:
+        file_path: The path to the file to write to.
+        content: The text content to write.
+    """
+    import os
+    try:
+        # Create directories if they don't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return f"Successfully wrote to {file_path}"
+    except Exception as e:
+        return f"Error writing file: {e}"
+
+@skill
+def run_shell_command(command: str) -> str:
+    """
+    Executes a shell command and returns the output.
+    
+    Args:
+        command: The shell command to execute.
+    """
+    import subprocess
+    try:
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        output = result.stdout
+        if result.stderr:
+            output += f"\nStderr: {result.stderr}"
+        return output
+    except Exception as e:
+        return f"Error executing command: {e}"

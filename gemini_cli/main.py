@@ -68,8 +68,15 @@ def conductor_run(
         return
         
     console.print(f"[bold blue]Running Conductor workflow: {workflow}[/bold blue]")
+    
+    # Pre-scan conductor directory to provide immediate context and avoid "not set up" errors
+    initial_context = ""
+    if os.path.exists("conductor"):
+        files = os.listdir("conductor")
+        initial_context = f"\n\nNOTE: The 'conductor/' directory already exists and contains: {', '.join(files)}. The environment is likely already set up."
+    
     # Start a chat session with the workflow's prompt as the system instruction
-    chat(model=model, system=system_prompt)
+    chat(model=model, system=system_prompt + initial_context)
 
 @extensions_app.command()
 def install(url: str):
@@ -249,15 +256,84 @@ def chat(
                 
                 response = chat_session.send_message(user_input, stream=stream)
                 
-                console.print("[bold blue]Gemini:[/bold blue]")
-                if stream:
-                    for chunk in response:
-                        print(chunk.text, end="", flush=True)
-                    print()
-                else:
-                    # Non-streaming response contains the full text
-                    print(response.text)
+                # Manual Function Calling Loop
+                from google.ai.generativelanguage_v1beta.types import content
                 
+                while True:
+                    # Check for function calls in the response
+                    function_calls = []
+                    try:
+                        if response.candidates:
+                             for part in response.candidates[0].content.parts:
+                                if part.function_call:
+                                    function_calls.append(part.function_call)
+                    except AttributeError:
+                        pass 
+
+                    if function_calls:
+                        response_parts = []
+                        
+                        for function_call in function_calls:
+                            # console.print(f"[dim]Tool Call: {function_call.name}[/dim]")
+                            
+                            tool_name = function_call.name
+                            tool_args = dict(function_call.args)
+                            
+                            # Find the function in our registry
+                            tool_func = registry.get_function_map().get(tool_name)
+                            
+                            if tool_func:
+                                try:
+                                    # Execute the tool
+                                    result = tool_func(**tool_args)
+                                    
+                                    response_parts.append(content.Part(
+                                        function_response=content.FunctionResponse(
+                                            name=tool_name,
+                                            response={"result": result}
+                                        )
+                                    ))
+                                except Exception as e:
+                                    error_msg = f"Error executing {tool_name}: {str(e)}"
+                                    console.print(f"[red]{error_msg}[/red]")
+                                    response_parts.append(content.Part(
+                                        function_response=content.FunctionResponse(
+                                            name=tool_name,
+                                            response={"error": error_msg}
+                                        )
+                                    ))
+                            else:
+                                 console.print(f"[red]Tool '{tool_name}' not found.[/red]")
+                                 response_parts.append(content.Part(
+                                        function_response=content.FunctionResponse(
+                                            name=tool_name,
+                                            response={"error": f"Tool {tool_name} not found"}
+                                        )
+                                    ))
+
+                        # Send ALL function responses back to the model in one go
+                        response = chat_session.send_message(
+                            response_parts,
+                            stream=stream
+                        )
+                    else:
+                        # No function call, just print the text response and break the loop
+                        console.print("[bold blue]Gemini:[/bold blue]")
+                        if stream:
+                            try:
+                                for chunk in response:
+                                    print(chunk.text, end="", flush=True)
+                                print()
+                            except ValueError:
+                                # Sometimes a chunk might not have text if it was a weird stop sequence
+                                pass
+                        else:
+                             # Non-streaming response contains the full text
+                             # Check if it has text parts
+                             if response.text:
+                                print(response.text)
+                        break
+
             except KeyboardInterrupt:
                 console.print("\n[yellow]Exiting...[/yellow]")
                 break
