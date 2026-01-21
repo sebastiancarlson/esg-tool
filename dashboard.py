@@ -236,7 +236,7 @@ def show_strategic_context(module_name):
             "hall": "Skapar en inkluderande arbetsplats som bidrar till social stabilitet och minskad ojämlikhet."
         },
         "Governance": {
-            "risk": "Tydliga policys och visselblåsarsystem skyddar mot korruption, böter och varumärkesskador.",
+            "risk": "Tydliga policys och visselblåsarsystem skyddar mot korruption, böter och varumärkeskador.",
             "effekt": "Tydliga ansvarsområden och processer (SOP:er) minskar intern byråkrati och osäkerhet.",
             "lag": "Krav enligt ESRS G1 (Affärsetik) samt Visselblåsarlagen.",
             "konk": "Kunder ställer allt högre krav på etiska riktlinjer i sina leverantörskoder (CoC).",
@@ -290,7 +290,8 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS d_Personal (person_id INTEGER PRIMARY KEY AUTOINCREMENT, fornamn TEXT, efternamn TEXT, hem_postnummer TEXT)",
             "CREATE TABLE IF NOT EXISTS d_Kundsiter (kund_plats_id INTEGER PRIMARY KEY AUTOINCREMENT, kund_namn TEXT, postnummer TEXT)",
             "CREATE TABLE IF NOT EXISTS f_Uppdrag (uppdrag_id INTEGER PRIMARY KEY AUTOINCREMENT, person_id INTEGER, kund_plats_id INTEGER, startdatum TEXT, slutdatum TEXT, dagar_per_vecka REAL, distans_km REAL, fardmedel TEXT)",
-            "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)"
+            "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)",
+            "CREATE TABLE IF NOT EXISTS f_Scope3_BusinessTravel (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, travel_type TEXT, distance_km REAL, fuel_type TEXT, class_type TEXT, co2_kg REAL)"
         ]
         for sql in tables: conn.execute(sql)
         
@@ -335,7 +336,7 @@ if 'page' not in st.session_state: st.session_state.page = "Översikt"
 @st.fragment
 def render_overview():
     # Header & Ingress
-    skill_spotlight_header("Hållbarhetsrapport 2025", "ESG Workspace")
+    skill_spotlight_header("Hållbarhet", "ESG Workspace")
     show_strategic_context("Översikt")
     skill_ingress("""
     Människor förändras. De utvecklas, och söker nya utmaningar. 
