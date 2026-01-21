@@ -10,9 +10,103 @@ import os
 from . import config
 from . import core
 from . import utils
+from .skills import registry
 
 app = typer.Typer(help="Gemini CLI - AI in your terminal")
 console = Console()
+
+extensions_app = typer.Typer(help="Manage Gemini CLI extensions")
+app.add_typer(extensions_app, name="extensions")
+
+conductor_app = typer.Typer(help="Conductor agentic workflows")
+app.add_typer(conductor_app, name="conductor")
+
+@conductor_app.command(name="list")
+def conductor_list():
+    """
+    List available Conductor workflows.
+    """
+    import tomllib
+    conductor_dir = os.path.join(os.path.dirname(__file__), "extensions", "conductor", "commands", "conductor")
+    if not os.path.exists(conductor_dir):
+        console.print("[red]Conductor extension not found. Install it first.[/red]")
+        return
+        
+    table = Table(title="Available Conductor Workflows")
+    table.add_column("Command", style="cyan")
+    table.add_column("Description", style="green")
+    
+    for file in os.listdir(conductor_dir):
+        if file.endswith(".toml"):
+            with open(os.path.join(conductor_dir, file), "rb") as f:
+                data = tomllib.load(f)
+                table.add_row(file.replace(".toml", ""), data.get("description", "No description"))
+                
+    console.print(table)
+
+@conductor_app.command(name="run")
+def conductor_run(
+    workflow: str,
+    model: Annotated[str, typer.Option("--model", "-m", help="Model to use")] = "gemini-2.0-flash-exp"
+):
+    """
+    Run a specific Conductor workflow.
+    """
+    import tomllib
+    workflow_path = os.path.join(os.path.dirname(__file__), "extensions", "conductor", "commands", "conductor", f"{workflow}.toml")
+    
+    if not os.path.exists(workflow_path):
+        console.print(f"[red]Workflow '{workflow}' not found.[/red]")
+        return
+        
+    with open(workflow_path, "rb") as f:
+        data = tomllib.load(f)
+        system_prompt = data.get("prompt", "")
+        
+    if not system_prompt:
+        console.print(f"[red]Workflow '{workflow}' has no prompt defined.[/red]")
+        return
+        
+    console.print(f"[bold blue]Running Conductor workflow: {workflow}[/bold blue]")
+    # Start a chat session with the workflow's prompt as the system instruction
+    chat(model=model, system=system_prompt)
+
+@extensions_app.command()
+def install(url: str):
+    """
+    Install an extension from a Git repository.
+    """
+    import subprocess
+    import shutil
+    
+    repo_name = url.split("/")[-1].replace(".git", "")
+    target_dir = os.path.join(os.path.dirname(__file__), "extensions", repo_name)
+    
+    if os.path.exists(target_dir):
+        console.print(f"[yellow]Extension '{repo_name}' is already installed. Reinstalling...[/yellow]")
+        shutil.rmtree(target_dir)
+        
+    console.print(f"Installing extension from [cyan]{url}[/cyan]...")
+    try:
+        subprocess.run(["git", "clone", url, target_dir], check=True, capture_output=True)
+        console.print(f"[green]Successfully installed '{repo_name}'![/green]")
+    except subprocess.CalledProcessError as e:
+        console.print(f"[red]Failed to install extension: {e.stderr.decode()}[/red]")
+
+@app.command()
+def skills():
+    """
+    List available agent skills/tools.
+    """
+    tools = registry.get_tools()
+    table = Table(title="Available Agent Skills")
+    table.add_column("Name", style="cyan")
+    table.add_column("Description", style="green")
+    
+    for tool in tools:
+        table.add_row(tool.__name__, tool.__doc__.strip().split('\n')[0] if tool.__doc__ else "No description")
+    
+    console.print(table)
 
 @app.command(name="config")
 def configure(
@@ -103,7 +197,8 @@ def ask(
             model_name=model,
             prompt=full_prompt,
             image_path=image,
-            system_instruction=system
+            system_instruction=system,
+            tools=registry.get_tools()
         )
     except ValueError as e:
         console.print(f"[red]{e}[/red]")
@@ -119,7 +214,13 @@ def chat(
     api_key = config.get_api_key()
     try:
         client = core.GeminiClient(api_key)
-        chat_session = client.start_chat(model_name=model, system_instruction=system)
+        # Pass tools to start_chat. With enable_automatic_function_calling=True in core.py, 
+        # the SDK will handle execution loop.
+        chat_session = client.start_chat(
+            model_name=model, 
+            system_instruction=system,
+            tools=registry.get_tools()
+        )
         
         console.print(f"[bold green]Starting chat with {model}. Type 'exit' to quit, '/reset' to clear history.[/bold green]")
         if system:
@@ -142,12 +243,20 @@ def chat(
                     console.print("[yellow]Chat history reset.[/yellow]")
                     continue
 
-                response = chat_session.send_message(user_input, stream=True)
+                # Disable streaming if tools are active (SDK limitation)
+                tools_active = len(registry.get_tools()) > 0
+                stream = not tools_active
+                
+                response = chat_session.send_message(user_input, stream=stream)
                 
                 console.print("[bold blue]Gemini:[/bold blue]")
-                for chunk in response:
-                    print(chunk.text, end="", flush=True)
-                print()
+                if stream:
+                    for chunk in response:
+                        print(chunk.text, end="", flush=True)
+                    print()
+                else:
+                    # Non-streaming response contains the full text
+                    print(response.text)
                 
             except KeyboardInterrupt:
                 console.print("\n[yellow]Exiting...[/yellow]")
