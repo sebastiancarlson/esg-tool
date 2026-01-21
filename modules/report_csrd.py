@@ -2,6 +2,7 @@ import pandas as pd
 import sqlite3
 import os
 from io import BytesIO
+from fpdf import FPDF
 
 def get_db_connection(db_path="database/esg_index.db"):
     """Establish connection to the SQLite database."""
@@ -75,3 +76,34 @@ def generate_csrd_report() -> BytesIO:
     writer.close()
     output.seek(0)
     return output
+
+def generate_pdf_summary(summary_df: pd.DataFrame) -> BytesIO:
+    """
+    Generates a PDF summary of the CSRD report.
+    Args:
+        summary_df (pd.DataFrame): The summary DataFrame containing Scope data.
+    Returns:
+        BytesIO: The PDF file in memory.
+    """
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    pdf.cell(200, 10, txt="CSRD Report Summary", ln=True, align="C")
+    pdf.ln(10)
+
+    # Add table headers
+    pdf.set_font("Arial", style='B', size=10)
+    pdf.cell(80, 10, "Scope", 1)
+    pdf.cell(80, 10, "Total CO2e (kg)", 1, ln=True)
+    pdf.set_font("Arial", size=10)
+
+    # Add table data
+    for index, row in summary_df.iterrows():
+        pdf.cell(80, 10, str(row["Scope"]), 1)
+        pdf.cell(80, 10, f"{row["Total CO2e (kg)"]:.2f}", 1, ln=True)
+
+    pdf_output = BytesIO()
+    pdf.output(pdf_output)
+    pdf_output.seek(0)
+    return pdf_output
