@@ -10,13 +10,15 @@ from datetime import datetime
 try:
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
-    from modules import scope3_travel # NEW
+    from modules import scope3_travel 
+    from modules import scope3_waste # NEW
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
-    from modules import scope3_travel # NEW
+    from modules import scope3_travel 
+    from modules import scope3_waste # NEW
 
 # ============================================
 # 1. CONFIG & AUTH
@@ -560,7 +562,30 @@ def render_calc():
                 st.info("Inga affärsresor registrerade än.")
 
     with t3:
-        st.write("Waste input form will go here.")
+        with st.form("waste_form"):
+            st.subheader("Registrera Avfall")
+            waste_date = st.date_input("Datum för avfallshantering")
+            waste_type = st.selectbox("Typ av avfall", ['General', 'Food', 'Paper/Cardboard', 'Plastics', 'Hazardous', 'Other'])
+            weight_kg = st.number_input("Vikt (kg)", min_value=0.0, format="%.2f")
+            disposal_method = st.selectbox("Avfallshanteringsmetod", ['Landfill', 'Recycled', 'Composted', 'Incinerated', 'Other'])
+            
+            if st.form_submit_button("Spara Avfall"):
+                co2_kg = scope3_waste.calculate_waste_emissions(waste_type, weight_kg, disposal_method)
+                with get_connection() as conn:
+                    conn.execute("INSERT INTO f_Scope3_Waste (date, waste_type, weight_kg, disposal_method, co2_kg) VALUES (?, ?, ?, ?, ?)",
+                                 (waste_date.strftime('%Y-%m-%d'), waste_type, weight_kg, disposal_method, co2_kg))
+                    conn.commit()
+                st.success(f"Avfall registrerat! Beräknade utsläpp: {co2_kg:.2f} kg CO2.")
+                st.rerun()
+        
+        st.markdown("---")
+        st.subheader("Registrerat Avfall")
+        with get_connection() as conn:
+            waste_df = pd.read_sql("SELECT date, waste_type, weight_kg, disposal_method, co2_kg FROM f_Scope3_Waste", conn)
+            if not waste_df.empty:
+                st.dataframe(waste_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Inget avfall registrerat än.")
 
     with t4:
         with st.form("spend_form"):

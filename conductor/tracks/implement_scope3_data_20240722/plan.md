@@ -16,7 +16,7 @@ This plan outlines the steps to implement expanded Scope 3 data collection and c
     - [x] Sub-task: Create `calculate_purchased_goods_emissions` function
 - [ ] Task: Develop initial data entry UI for new Scope 3 categories
     - [x] Sub-task: Add Business Travel input form to `dashboard.py`
-    - [ ] Sub-task: Add Waste input form to `dashboard.py`
+    - [x] Sub-task: Add Waste input form to `dashboard.py`
     - [ ] Sub-task: Add Purchased Goods & Services input form to `dashboard.py`
 - [ ] Task: Integrate new Scope 3 calculations into `report_csrd.py` and overall summary
     - [ ] Sub-task: Update `generate_csrd_report` to include new Scope 3 data
