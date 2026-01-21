@@ -17,5 +17,5 @@
     - [ ] Provide a download button for the generated file.
 
 ## Phase 3: Verification
-- [ ] Task: Manual Test
+- [x] Task: Manual Test
     - [ ] Run the app, click generate, and verify the Excel file opens and contains data.
