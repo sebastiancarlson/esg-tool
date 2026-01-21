@@ -7,6 +7,7 @@ Python (current implementation). Note: Future migration to Microsoft 365 ecosyst
 - Streamlit
 - Pandas
 - Plotly
+- FPDF2 (for PDF generation)
 
 ## Data Storage
 - SQLite (database/esg_index.db)

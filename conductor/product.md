@@ -23,5 +23,6 @@ The ESG Tool aims to serve a diverse range of users within organizations:
 -   **Comprehensive Emissions Calculation:** Covering all three scopes of emissions, with detailed breakdowns by source and activity.
 -   **CSRD Reporting Module:** Automating the generation of CSRD-compliant reports, including key performance indicators and narrative disclosures.
 -   **Data Visualization Tools:** Interactive charts and graphs to explore emissions data and identify trends.
+-   **PDF Export:** Ability to generate and export a PDF summary of the CSRD report for easy sharing and presentation.
 -   **Benchmarking:** Compare environmental performance against industry peers and best practices.
 -   **Integration Capabilities:** Seamless integration with existing data sources and systems for efficient data management.
