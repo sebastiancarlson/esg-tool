@@ -4,6 +4,11 @@ import os
 from io import BytesIO
 from fpdf import FPDF
 
+# Import new Scope 3 modules
+from modules import scope3_travel
+from modules import scope3_waste
+from modules import scope3_purchased_goods
+
 def get_db_connection(db_path="database/esg_index.db"):
     """Establish connection to the SQLite database."""
     # Ensure directory exists if we are running from root
@@ -40,9 +45,30 @@ def generate_csrd_report() -> BytesIO:
         except Exception:
             scope2_df = pd.DataFrame(columns=["datum", "kWh", "kostnad", "co2_kg"])
 
-        # --- Scope 3 Data (Spend & Commuting) ---
-        # Assuming tables exist, otherwise empty
-        scope3_df = pd.DataFrame(columns=["Category", "CO2e (kg)"]) 
+        # --- Scope 3 Data (Detailed) ---
+        # Initialize Scope 3 specific dataframes
+        try:
+            scope3_bus_travel_df = pd.read_sql("SELECT * FROM f_Scope3_BusinessTravel", conn)
+        except Exception:
+            scope3_bus_travel_df = pd.DataFrame(columns=["date", "travel_type", "distance_km", "fuel_type", "class_type", "co2_kg"])
+
+        try:
+            scope3_waste_df = pd.read_sql("SELECT * FROM f_Scope3_Waste", conn)
+        except Exception:
+            scope3_waste_df = pd.DataFrame(columns=["date", "waste_type", "weight_kg", "disposal_method", "co2_kg"])
+
+        try:
+            scope3_purchased_goods_df = pd.read_sql("SELECT * FROM f_Scope3_PurchasedGoodsServices", conn)
+        except Exception:
+            scope3_purchased_goods_df = pd.DataFrame(columns=["date", "category", "amount_sek", "emission_factor_kg_per_sek", "co2_kg"])
+
+        # Summing up new Scope 3 categories
+        total_scope3_bus_travel = scope3_bus_travel_df["co2_kg"].sum() if not scope3_bus_travel_df.empty else 0
+        total_scope3_waste = scope3_waste_df["co2_kg"].sum() if not scope3_waste_df.empty else 0
+        total_scope3_purchased_goods = scope3_purchased_goods_df["co2_kg"].sum() if not scope3_purchased_goods_df.empty else 0
+
+        # Total Scope 3 emissions
+        total_scope3 = total_scope3_bus_travel + total_scope3_waste + total_scope3_purchased_goods
 
         # --- Summary Sheet ---
         summary_data = {
@@ -50,7 +76,7 @@ def generate_csrd_report() -> BytesIO:
             "Total CO2e (kg)": [
                 scope1_df["co2_kg"].sum() if not scope1_df.empty else 0,
                 scope2_df["co2_kg"].sum() if not scope2_df.empty else 0,
-                0 # Placeholder until Scope 3 tables are confirmed
+                total_scope3
             ]
         }
         summary_df = pd.DataFrame(summary_data)
@@ -59,7 +85,11 @@ def generate_csrd_report() -> BytesIO:
         summary_df.to_excel(writer, sheet_name='CSRD Summary', index=False)
         scope1_df.to_excel(writer, sheet_name='Scope 1 - Fuel', index=False)
         scope2_df.to_excel(writer, sheet_name='Scope 2 - Energy', index=False)
-        scope3_df.to_excel(writer, sheet_name='Scope 3 - Other', index=False)
+        
+        # Add detailed Scope 3 sheets
+        scope3_bus_travel_df.to_excel(writer, sheet_name='Scope 3 - Business Travel', index=False)
+        scope3_waste_df.to_excel(writer, sheet_name='Scope 3 - Waste', index=False)
+        scope3_purchased_goods_df.to_excel(writer, sheet_name='Scope 3 - Purchased Goods', index=False)
         
         # Add metadata/info
         workbook = writer.book
