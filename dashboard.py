@@ -10,11 +10,13 @@ from datetime import datetime
 try:
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
+    from modules import scope3_travel # NEW
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
+    from modules import scope3_travel # NEW
 
 # ============================================
 # 1. CONFIG & AUTH
@@ -459,7 +461,8 @@ def render_governance():
 def render_calc():
     skill_spotlight_header("Beräkningar")
     show_strategic_context("Beräkningar")
-    t1, t2 = st.tabs(["🚌 Pendling", "💸 Inköp (Spend)"])
+    t1, t2, t3, t4 = st.tabs(["🚌 Pendling", "✈️ Affärsresor", "🗑️ Avfall", "💸 Inköp (Spend)"]) # Added new tabs
+    
     with t1:
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -524,6 +527,42 @@ def render_calc():
             if not calc_df.empty: st.dataframe(calc_df, hide_index=True, use_container_width=True)
 
     with t2:
+        with st.form("business_travel_form"):
+            st.subheader("Registrera Affärsresa")
+            travel_date = st.date_input("Datum för resa")
+            travel_type = st.selectbox("Typ av resa", ['Flight-Short', 'Flight-Medium', 'Flight-Long', 'Rail', 'Car'])
+            distance_km = st.number_input("Distans (km)", min_value=0.0, format="%.2f")
+
+            fuel_type = None
+            class_type = 'Economy'
+
+            if travel_type == 'Car':
+                fuel_type = st.selectbox("Bränsletyp", ['Petrol', 'Diesel', 'Electric', 'Hybrid'])
+            elif travel_type.startswith('Flight'):
+                class_type = st.selectbox("Flygklass", ['Economy', 'Business', 'First'])
+            
+            if st.form_submit_button("Spara Affärsresa"):
+                co2_kg = scope3_travel.calculate_business_travel_emissions(travel_type, distance_km, fuel_type, class_type)
+                with get_connection() as conn:
+                    conn.execute("INSERT INTO f_Scope3_BusinessTravel (date, travel_type, distance_km, fuel_type, class_type, co2_kg) VALUES (?, ?, ?, ?, ?, ?)",
+                                 (travel_date.strftime('%Y-%m-%d'), travel_type, distance_km, fuel_type, class_type, co2_kg))
+                    conn.commit()
+                st.success(f"Affärsresa registrerad! Beräknade utsläpp: {co2_kg:.2f} kg CO2.")
+                st.rerun()
+        
+        st.markdown("---")
+        st.subheader("Registrerade Affärsresor")
+        with get_connection() as conn:
+            travel_df = pd.read_sql("SELECT date, travel_type, distance_km, fuel_type, class_type, co2_kg FROM f_Scope3_BusinessTravel", conn)
+            if not travel_df.empty:
+                st.dataframe(travel_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Inga affärsresor registrerade än.")
+
+    with t3:
+        st.write("Waste input form will go here.")
+
+    with t4:
         with st.form("spend_form"):
             c1, c2, c3 = st.columns(3)
             cat = c1.selectbox("Kategori", scope3_spend.get_categories())
