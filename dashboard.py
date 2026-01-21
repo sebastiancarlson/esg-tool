@@ -292,7 +292,8 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_Uppdrag (uppdrag_id INTEGER PRIMARY KEY AUTOINCREMENT, person_id INTEGER, kund_plats_id INTEGER, startdatum TEXT, slutdatum TEXT, dagar_per_vecka REAL, distans_km REAL, fardmedel TEXT)",
             "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)",
             "CREATE TABLE IF NOT EXISTS f_Scope3_BusinessTravel (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, travel_type TEXT, distance_km REAL, fuel_type TEXT, class_type TEXT, co2_kg REAL)",
-            "CREATE TABLE IF NOT EXISTS f_Scope3_Waste (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_type TEXT, weight_kg REAL, disposal_method TEXT, co2_kg REAL)"
+            "CREATE TABLE IF NOT EXISTS f_Scope3_Waste (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_type TEXT, weight_kg REAL, disposal_method TEXT, co2_kg REAL)",
+            "CREATE TABLE IF NOT EXISTS f_Scope3_PurchasedGoodsServices (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, category TEXT, amount_sek REAL, emission_factor_kg_per_sek REAL, co2_kg REAL)"
         ]
         for sql in tables: conn.execute(sql)
         

@@ -9,7 +9,7 @@ This plan outlines the steps to implement expanded Scope 3 data collection and c
 - [x] Task: Update database schema for new Scope 3 data
     - [x] Sub-task: Add tables/columns for Business Travel data
     - [x] Sub-task: Add tables/columns for Waste data
-    - [ ] Sub-task: Add tables/columns for Purchased Goods & Services data
+    - [x] Sub-task: Add tables/columns for Purchased Goods & Services data
 - [ ] Task: Implement Python calculation logic for new Scope 3 categories
     - [ ] Sub-task: Create `calculate_business_travel_emissions` function
     - [ ] Sub-task: Create `calculate_waste_emissions` function
