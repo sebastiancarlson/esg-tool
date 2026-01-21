@@ -6,8 +6,3 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: Implement CSRD Report Generation Module**
   *Link: [./tracks/implement_csrd_report_generation_module_20240703/](./tracks/implement_csrd_report_generation_module_20240703/)*
-
----
-
-- [x] **Track: Implement PDF Export for CSRD Report**
-  *Link: [./tracks/implement_pdf_export_20260121/](./tracks/implement_pdf_export_20260121/)*
