@@ -11,14 +11,16 @@ try:
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
     from modules import scope3_travel 
-    from modules import scope3_waste # NEW
+    from modules import scope3_waste 
+    from modules import scope3_purchased_goods # NEW
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
     from modules import scope3_pendling, scope1_calculator, scope2_calculator, scope3_spend, governance, dma_tool, social_tracker, index_generator
     from modules import report_csrd, export_excel
     from modules import scope3_travel 
-    from modules import scope3_waste # NEW
+    from modules import scope3_waste 
+    from modules import scope3_purchased_goods # NEW
 
 # ============================================
 # 1. CONFIG & AUTH
@@ -588,18 +590,29 @@ def render_calc():
                 st.info("Inget avfall registrerat än.")
 
     with t4:
-        with st.form("spend_form"):
-            c1, c2, c3 = st.columns(3)
-            cat = c1.selectbox("Kategori", scope3_spend.get_categories())
-            prod = c2.text_input("Beskrivning / Produkt")
-            sek = c3.number_input("Totalt Belopp (SEK)", 0.0, step=100.0)
-            if st.form_submit_button("Spara inköp"):
-                if sek > 0:
-                    scope3_spend.add_spend_item(cat, "", prod, sek, "2025")
-                    st.success("Sparad!")
-                    st.rerun()
-        summ = scope3_spend.get_spend_summary("2025")
-        if not summ.empty: st.dataframe(summ, hide_index=True, use_container_width=True)
+        with st.form("purchased_goods_form"):
+            st.subheader("Registrera Inköp av Varor & Tjänster")
+            purchase_date = st.date_input("Datum för inköp")
+            pg_category = st.selectbox("Kategori", ['IT Services', 'Office Supplies', 'Consulting', 'Other'])
+            amount_sek = st.number_input("Totalt Belopp (SEK)", min_value=0.0, step=100.0, format="%.2f")
+            
+            if st.form_submit_button("Spara Inköp"):
+                co2_kg = scope3_purchased_goods.calculate_purchased_goods_emissions(pg_category, amount_sek)
+                with get_connection() as conn:
+                    conn.execute("INSERT INTO f_Scope3_PurchasedGoodsServices (date, category, amount_sek, co2_kg) VALUES (?, ?, ?, ?)",
+                                 (purchase_date.strftime('%Y-%m-%d'), pg_category, amount_sek, co2_kg))
+                    conn.commit()
+                st.success(f"Inköp registrerat! Beräknade utsläpp: {co2_kg:.2f} kg CO2.")
+                st.rerun()
+        
+        st.markdown("---")
+        st.subheader("Registrerade Inköp")
+        with get_connection() as conn:
+            purchased_goods_df = pd.read_sql("SELECT date, category, amount_sek, co2_kg FROM f_Scope3_PurchasedGoodsServices", conn)
+            if not purchased_goods_df.empty:
+                st.dataframe(purchased_goods_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Inga inköp registrerade än.")
 
 @st.fragment
 def render_reports():
