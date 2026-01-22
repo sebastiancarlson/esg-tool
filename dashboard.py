@@ -12,7 +12,7 @@ try:
     from modules import report_csrd, export_excel
     from modules import scope3_travel 
     from modules import scope3_waste 
-    from modules import scope3_purchased_goods # NEW
+    from modules import scope3_purchased_goods 
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -20,7 +20,7 @@ except ImportError:
     from modules import report_csrd, export_excel
     from modules import scope3_travel 
     from modules import scope3_waste 
-    from modules import scope3_purchased_goods # NEW
+    from modules import scope3_purchased_goods 
 
 # ============================================
 # 1. CONFIG & AUTH
@@ -160,20 +160,15 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
 
-    /* --- 6. BACKGROUND BLOB (The reliable way) --- */
-    /* Violet blob SVG encoded as data URI */
+    /* --- 6. BACKGROUND BLOBS (Aqua, Top & Bottom) --- */
     .stApp {
-        background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%238A2BE2" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E');
-        background-repeat: no-repeat;
-        background-position: right -10% top -10%; /* Position top right, partly off screen */
-        background-size: 50vw; /* Size */
-        background-attachment: fixed;
-    }
-    /* Add a pseudo-element to control opacity/blur of the background image if needed, 
-       but direct background-image is simpler. We rely on the SVG fill color opacity here. 
-       Let's adjust the SVG fill opacity directly in the URL for subtle effect */
-    .stApp {
-        background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%238A2BE2" fill-opacity="0.3" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E');
+        background-image: 
+            url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%237CF7F9" fill-opacity="1" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E'),
+            url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath fill="%237CF7F9" fill-opacity="1" d="M42.9,-69.5C52.9,-60.3,56.6,-43.9,59.5,-29.5C62.4,-15.2,64.4,-2.8,62.8,9.1C61.2,21.1,56,32.6,48.9,44.3C41.7,56,32.6,68,20,74.8C7.3,81.6,-8.8,83.2,-23.2,79C-37.7,74.8,-50.4,64.8,-56.4,52.1C-62.4,39.4,-61.6,24.1,-66,8.2C-70.3,-7.8,-79.8,-24.3,-76.8,-36.9C-73.9,-49.5,-58.5,-58.2,-43.6,-65.3C-28.7,-72.3,-14.3,-77.7,1,-79.3C16.4,-80.9,32.8,-78.7,42.9,-69.5Z" transform="translate(100 100)" /%3E%3C/svg%3E');
+        background-repeat: no-repeat, no-repeat;
+        background-position: top -40% center, bottom -40% right -20%;
+        background-size: 110vw, 90vw;
+        background-attachment: fixed, fixed;
     }
 
 </style>
@@ -224,7 +219,7 @@ def show_strategic_context(module_name):
             "risk": "Ger en helhetsbild av bolagets ESG-exponering, vilket minimerar risken för strategiska överraskningar från investerare eller kunder.",
             "effekt": "Centraliserad data minskar tiden för manuell rapportering och dubbelarbete vid upphandlingar.",
             "lag": "Säkerställer att ledningen har den överblick som krävs enligt aktiebolagslagens krav på bolagsstyrning.",
-            "konk": "En transparent hållbarhetsprofil är idag en 'licence to operate' för att behålla och vinna stora kunder.",
+            "konk": "En transparent hållbarhetsprofil är idag en 'licence to operate' for att behålla och vinna stora kunder.",
             "hall": "Möjliggör datadrivna beslut för att styra hela verksamheten mot långsiktiga hållbarhetsmål."
         },
         "Strategi (CSRD)": {
@@ -620,7 +615,7 @@ def render_reports():
     show_strategic_context("Rapporter")
     t1, t2 = st.tabs(["📄 CSRD PDF/Excel", "🔍 ESRS Index"])
     with t1:
-        st.info("Klicka nedan för att generera en Excel-rapport med all data för CSRD (Scope 1, 2, 3).")
+        st.info("Klicka nedan för att generera en Excel-rapport med all data for CSRD (Scope 1, 2, 3).")
         col_excel, col_pdf = st.columns(2) # Create two columns for buttons
         with col_excel:
             if st.button("Generera CSRD Rapport (Excel)"):
@@ -639,24 +634,29 @@ def render_reports():
             st.info("Klicka nedan för att generera en PDF-sammanfattning av CSRD-rapporten.")
             if st.button("Generera CSRD Sammanfattning (PDF)"):
                 try:
-                    # Fetch summary data (re-using logic from generate_csrd_report)
                     conn = get_connection()
-                    try:
-                        scope1_df = pd.read_sql("SELECT * FROM f_Drivmedel", conn)
-                    except Exception:
-                        scope1_df = pd.DataFrame(columns=["datum", "volym_liter", "drivmedelstyp", "co2_kg"])
-                        
-                    try:
-                        scope2_df = pd.read_sql("SELECT * FROM elforbrukning", conn) 
-                    except Exception:
-                        scope2_df = pd.DataFrame(columns=["datum", "kWh", "kostnad", "co2_kg"])
+                    
+                    # Fetch all Scope 3 related dataframes
+                    scope1_df = pd.read_sql("SELECT * FROM f_Drivmedel", conn) if "f_Drivmedel" in pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn) else pd.DataFrame(columns=["datum", "volym_liter", "drivmedelstyp", "co2_kg"])
+                    scope2_df = pd.read_sql("SELECT * FROM elforbrukning", conn) if "elforbrukning" in pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn) else pd.DataFrame(columns=["datum", "kWh", "kostnad", "co2_kg"])
+                    scope3_bus_travel_df = pd.read_sql("SELECT * FROM f_Scope3_BusinessTravel", conn) if "f_Scope3_BusinessTravel" in pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn) else pd.DataFrame(columns=["date", "travel_type", "distance_km", "fuel_type", "class_type", "co2_kg"])
+                    scope3_waste_df = pd.read_sql("SELECT * FROM f_Scope3_Waste", conn) if "f_Scope3_Waste" in pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn) else pd.DataFrame(columns=["date", "waste_type", "weight_kg", "disposal_method", "co2_kg"])
+                    scope3_purchased_goods_df = pd.read_sql("SELECT * FROM f_Scope3_PurchasedGoodsServices", conn) if "f_Scope3_PurchasedGoodsServices" in pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn) else pd.DataFrame(columns=["date", "category", "amount_sek", "emission_factor_kg_per_sek", "co2_kg"])
+
+                    # Summing up new Scope 3 categories
+                    total_scope3_bus_travel = scope3_bus_travel_df["co2_kg"].sum() if not scope3_bus_travel_df.empty else 0
+                    total_scope3_waste = scope3_waste_df["co2_kg"].sum() if not scope3_waste_df.empty else 0
+                    total_scope3_purchased_goods = scope3_purchased_goods_df["co2_kg"].sum() if not scope3_purchased_goods_df.empty else 0
+
+                    # Total Scope 3 emissions
+                    total_scope3 = total_scope3_bus_travel + total_scope3_waste + total_scope3_purchased_goods
 
                     summary_data = {
                         "Scope": ["Scope 1", "Scope 2", "Scope 3"],
                         "Total CO2e (kg)": [
                             scope1_df["co2_kg"].sum() if not scope1_df.empty else 0,
                             scope2_df["co2_kg"].sum() if not scope2_df.empty else 0,
-                            0 # Placeholder until Scope 3 tables are confirmed
+                            total_scope3 
                         ]
                     }
                     summary_df = pd.DataFrame(summary_data)
@@ -671,6 +671,8 @@ def render_reports():
                     st.success("PDF Sammanfattning genererad!")
                 except Exception as e:
                     st.error(f"Kunde inte generera PDF-sammanfattning: {e}")
+                finally:
+                    conn.close()
     with t2:
         idx_df = index_generator.get_esrs_index(2025)
         st.dataframe(idx_df, hide_index=True, use_container_width=True)
