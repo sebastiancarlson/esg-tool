@@ -138,19 +138,31 @@ st.markdown("""
         color: var(--text-white);
     }
 
-    /* --- 3. BUTTONS --- */
+    /* --- 3. BUTTONS (Badge-style / Subtle) --- */
     div.stButton > button {
-        background-color: var(--skill-blue);
-        color: white;
-        border-radius: 8px; /* Slightly less rounded for a more 'tech' feel */
-        border: none;
-        font-weight: 600;
+        background-color: rgba(124, 247, 249, 0.05);
+        color: var(--skill-aqua);
+        border-radius: 8px;
+        border: 1px solid rgba(124, 247, 249, 0.2);
+        font-weight: 500;
         transition: all 0.2s ease;
+        text-align: left;
+        padding: 10px 15px;
     }
+    
     div.stButton > button:hover {
-        background-color: var(--skill-aqua);
-        color: var(--skill-indigo);
+        background-color: rgba(124, 247, 249, 0.15);
+        border: 1px solid var(--skill-aqua);
+        color: var(--skill-aqua);
         transform: translateY(-1px);
+    }
+
+    /* Active Page Button Highlight */
+    div.stButton > button[kind="primary"] {
+        background-color: rgba(124, 247, 249, 0.2);
+        border: 1px solid var(--skill-aqua);
+        color: #FFFFFF;
+        font-weight: 700;
     }
     
     /* --- 4. SIDEBAR --- */
