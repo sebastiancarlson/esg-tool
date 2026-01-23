@@ -14,5 +14,5 @@ This plan outlines the steps to build the comprehensive Water (ESRS E3) and Wast
     - [x] Sub-task: Create "Vatten" tab under "Miljö" section
     - [x] Sub-task: Update "Avfall" tab to use new detailed data model and fields (Hazardous check)
     - [x] Sub-task: Add visualizations (Water trends, Waste breakdown)
-- [ ] Task: Update Reporting
-    - [ ] Sub-task: Ensure new data points are available in Excel export
+- [x] Task: Update Reporting
+    - [x] Sub-task: Ensure new data points are available in Excel export
