@@ -306,15 +306,17 @@ def render_overview():
              s3_purch = pd.read_sql("SELECT SUM(co2_kg)/1000.0 FROM f_Scope3_PurchasedGoodsServices", conn).iloc[0,0] or 0.0
              s3 = s3_travel + s3_waste + s3_purch
 
-        idx_data = index_generator.get_esrs_index(2025)
-        readiness = index_generator.calculate_readiness_score(idx_data)
+    # Readiness Score from GAP Analysis
+    score, completed, total = governance.get_readiness_kpis()
 
     st.markdown('<div class="skill-grid-container">', unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     with c1: skill_card("Scope 1 (Ton)", f"{s1:.1f}")
     with c2: skill_card("Scope 2 (Ton)", f"{s2:.1f}")
     with c3: skill_card("Scope 3 (Ton)", f"{s3:.1f}")
-    with c4: skill_card("Readiness Score", f"{readiness:.0f}%", "+5%") 
+    # Dynamic Readiness Score
+    delta = f"{completed}/{total} Krav"
+    with c4: skill_card("Readiness Score", f"{score:.0f}%", delta) 
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="skill-card">', unsafe_allow_html=True)
@@ -330,6 +332,51 @@ def render_overview():
     )
     st.plotly_chart(fig, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
+
+@st.fragment
+def render_strategy_gap():
+    badges = [{"text": "GAP Analysis", "icon": "file"}]
+    skill_spotlight_header("Strategi", "GAP-Analys & Krav", badges)
+    
+    score, completed, total = governance.get_readiness_kpis()
+    st.progress(score / 100)
+    st.caption(f"CSRD Readiness: {score:.1f}% ({completed} av {total} krav uppfyllda)")
+    
+    gap_df = governance.get_gap_analysis()
+    
+    if not gap_df.empty:
+        # Use Data Editor for quick updates
+        edited_df = st.data_editor(
+            gap_df,
+            column_config={
+                "status": st.column_config.SelectboxColumn(
+                    "Status",
+                    options=["Not Started", "In Progress", "Compliant", "N/A"],
+                    required=True,
+                ),
+                "evidence_link": st.column_config.LinkColumn("Bevis"),
+            },
+            hide_index=True,
+            use_container_width=True,
+            key="gap_editor"
+        )
+        
+        # Check for changes (Streamlit data editor doesn't auto-save to DB, need manual trigger or on_change)
+        # For simplicity in this iteration, we add a "Save Changes" button that processes the edited_df
+        if st.button("Spara ändringar"):
+            # Iterate and update changed rows
+            # Note: This is a bit heavy, in a real app we'd track diffs.
+            # But for now, we just loop through and upsert.
+            for index, row in edited_df.iterrows():
+                governance.update_gap_status(
+                    row['esrs_code'], 
+                    row['status'], 
+                    row['owner'], 
+                    row['evidence_link'], 
+                    row['notes']
+                )
+            st.success("GAP-analys uppdaterad!")
+            st.rerun()
 
 @st.fragment
 def render_env_climate():
@@ -512,30 +559,57 @@ def render_strategy_dma():
     ]
     skill_spotlight_header("Strategi", "Väsentlighetsanalys", badges)
     
-    # Restored logic from old render_strategy
-    show_page_help("Dubbel Väsentlighetsanalys (DMA)", """
-    Bedöm varje hållbarhetsfråga utifrån två perspektiv:
-    1. **Impact:** Påverkan på omvärlden.
-    2. **Financial:** Finansiell risk för bolaget.
-    """)
-    dma_data = dma_tool.get_dma_data()
+    t1, t2 = st.tabs(["Matris & Ämnen", "IRO (Risker & Möjligheter)"])
     
-    if not dma_data.empty:
-        fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5])
-        fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
-        fig.add_vline(x=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
-        fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="#7CF7F9")
-        st.plotly_chart(fig, use_container_width=True)
+    with t1:
+        show_page_help("Dubbel Väsentlighetsanalys (DMA)", """
+        Bedöm varje hållbarhetsfråga utifrån två perspektiv:
+        1. **Impact:** Påverkan på omvärlden.
+        2. **Financial:** Finansiell risk för bolaget.
+        """)
+        dma_data = dma_tool.get_dma_data()
+        
+        if not dma_data.empty:
+            fig = px.scatter(dma_data, x="financial_score", y="impact_score", text="topic", color="category", size_max=20, range_x=[0.5, 5.5], range_y=[0.5, 5.5])
+            fig.add_hline(y=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
+            fig.add_vline(x=2.5, line_dash="dash", line_color="rgba(255,255,255,0.2)")
+            fig.update_layout(plot_bgcolor='rgba(0,0,0,0)', paper_bgcolor='rgba(0,0,0,0)', font_color="#7CF7F9")
+            st.plotly_chart(fig, use_container_width=True)
 
-    with st.form("dma_form"):
-        topic = st.text_input("Ämne")
-        c1, c2 = st.columns(2)
-        imp = c1.slider("Impact", 1, 5, 3)
-        fin = c2.slider("Financial", 1, 5, 3)
-        cat = st.selectbox("Kategori", ["Miljö", "Socialt", "Styrning"])
-        if st.form_submit_button("Spara ämne"):
-            dma_tool.add_dma_topic(topic, imp, fin, cat)
-            st.rerun()
+        with st.form("dma_form"):
+            topic = st.text_input("Ämne")
+            c1, c2 = st.columns(2)
+            imp = c1.slider("Impact", 1, 5, 3)
+            fin = c2.slider("Financial", 1, 5, 3)
+            cat = st.selectbox("Kategori", ["Miljö", "Socialt", "Styrning"])
+            if st.form_submit_button("Spara ämne"):
+                dma_tool.add_dma_topic(topic, imp, fin, cat)
+                st.rerun()
+                
+    with t2:
+        if dma_data.empty:
+            st.info("Lägg till väsentliga ämnen först.")
+        else:
+            sel_topic = st.selectbox("Välj Väsentligt Ämne", dma_data['topic'].unique())
+            topic_id = dma_data[dma_data['topic'] == sel_topic]['id'].iloc[0]
+            
+            # Show existing IROs
+            iros = dma_tool.get_iros(topic_id)
+            if not iros.empty:
+                st.dataframe(iros[['type', 'description', 'financial_effect']], hide_index=True, use_container_width=True)
+            
+            # Add new IRO
+            with st.form("iro_form"):
+                st.subheader(f"Lägg till IRO för {sel_topic}")
+                iro_type = st.selectbox("Typ", ["Risk", "Möjlighet (Opportunity)", "Impact"])
+                desc = st.text_area("Beskrivning")
+                time_h = st.selectbox("Tidshorisont", ["Kort (<1 år)", "Medel (1-5 år)", "Lång (>5 år)"])
+                fin_eff = st.text_input("Finansiell Effekt (Estimat)")
+                
+                if st.form_submit_button("Spara IRO"):
+                    dma_tool.add_iro(topic_id, iro_type, desc, time_h, fin_eff)
+                    st.success("IRO Sparad!")
+                    st.rerun()
 
 def render_calc_travel_tabs():
     t1, t2 = st.tabs(["🚌 Pendling", "✈️ Affärsresor"])
@@ -642,6 +716,7 @@ with st.sidebar:
     st.markdown("<div style='margin-top:20px; color:#7CF7F9; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;'>Styrning (G)</div>", unsafe_allow_html=True)
     if st.button("Policys", use_container_width=True): st.session_state.page = "Policys"; st.rerun()
     if st.button("Väsentlighet (DMA)", use_container_width=True): st.session_state.page = "DMA"; st.rerun()
+    if st.button("GAP-analys", use_container_width=True): st.session_state.page = "GAP"; st.rerun()
 
     st.markdown("<div style='margin-top:20px; color:#7CF7F9; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;'>Rapport</div>", unsafe_allow_html=True)
     if st.button("Exportera", use_container_width=True): st.session_state.page = "Export"; st.rerun()
@@ -670,4 +745,5 @@ elif st.session_state.page == "Avfall": render_env_waste()
 elif st.session_state.page == "HR": render_social_hr()
 elif st.session_state.page == "Policys": render_gov_policy()
 elif st.session_state.page == "DMA": render_strategy_dma()
+elif st.session_state.page == "GAP": render_strategy_gap()
 elif st.session_state.page == "Export": render_export()

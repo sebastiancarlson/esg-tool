@@ -16,3 +16,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: Develop Water & Waste Management Data Module**
   *Link: [./tracks/implement_water_waste_management_20260123/](./tracks/implement_water_waste_management_20260123/)*
+
+---
+
+- [x] **Track: Implement Advanced CSRD Strategy & GAP Analysis**
+  *Link: [./tracks/implement_strategy_gap_analysis_20260123/](./tracks/implement_strategy_gap_analysis_20260123/)*

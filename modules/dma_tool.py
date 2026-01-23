@@ -44,3 +44,23 @@ def delete_dma_topic(topic_id):
         conn.execute("DELETE FROM f_DMA_Materiality WHERE id = ?", (topic_id,))
         conn.commit()
     st.cache_data.clear()
+
+# --- IRO FUNCTIONS ---
+
+def add_iro(topic_id, iro_type, description, time_horizon, financial_effect):
+    """
+    Adds an Impact, Risk, or Opportunity (IRO) to a material topic.
+    """
+    with get_conn() as conn:
+        conn.execute("""
+            INSERT INTO f_DMA_IRO (dma_topic_id, type, description, time_horizon, financial_effect)
+            VALUES (?, ?, ?, ?, ?)
+        """, (topic_id, iro_type, description, time_horizon, financial_effect))
+        conn.commit()
+
+def get_iros(topic_id):
+    """
+    Fetches IROs for a specific topic.
+    """
+    with get_conn() as conn:
+        return pd.read_sql("SELECT * FROM f_DMA_IRO WHERE dma_topic_id = ?", conn, params=(topic_id,))
