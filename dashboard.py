@@ -273,9 +273,50 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_Scope3_Waste (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_type TEXT, weight_kg REAL, disposal_method TEXT, co2_kg REAL)",
             "CREATE TABLE IF NOT EXISTS f_Scope3_PurchasedGoodsServices (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, category TEXT, amount_sek REAL, emission_factor_kg_per_sek REAL, co2_kg REAL)",
             "CREATE TABLE IF NOT EXISTS f_Water_Data (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, site_id INTEGER, withdrawal_m3 REAL, withdrawal_source TEXT, discharge_m3 REAL, discharge_dest TEXT, consumption_m3 REAL, recycled_m3 REAL)",
-            "CREATE TABLE IF NOT EXISTS f_Waste_Detailed (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_category TEXT, is_hazardous INTEGER, weight_kg REAL, treatment_method TEXT, supplier TEXT)"
+            "CREATE TABLE IF NOT EXISTS f_Waste_Detailed (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_category TEXT, is_hazardous INTEGER, weight_kg REAL, treatment_method TEXT, supplier TEXT)",
+            "CREATE TABLE IF NOT EXISTS f_GAP_Analysis (esrs_code TEXT PRIMARY KEY, status TEXT, owner TEXT, evidence_link TEXT, notes TEXT, last_updated TEXT)",
+            "CREATE TABLE IF NOT EXISTS f_DMA_IRO (id INTEGER PRIMARY KEY AUTOINCREMENT, dma_topic_id INTEGER, type TEXT, description TEXT, time_horizon TEXT, financial_effect TEXT)"
         ]
-        for sql in tables: conn.execute(sql)
+        for sql in tables: 
+            try:
+                conn.execute(sql)
+            except sqlite3.Error as e:
+                st.error(f"Database Init Error: {e}")
+        
+        # Populate ESRS Requirements if empty or update with fuller list
+        try:
+            count = conn.execute("SELECT COUNT(*) FROM f_ESRS_Requirements").fetchone()[0]
+            if count < 10:
+                esrs_data = [
+                    # General
+                    ("ESRS 2", "General Disclosures (Strategi, Governance, IRO)", "General", 1, 1),
+                    # Environment
+                    ("E1-1", "Transition plan for climate change mitigation", "E1 Climate", 1, 1),
+                    ("E1-2", "Policies related to climate change", "E1 Climate", 1, 1),
+                    ("E1-3", "Actions and resources in relation to climate change", "E1 Climate", 1, 1),
+                    ("E1-4", "Targets related to climate change mitigation and adaptation", "E1 Climate", 1, 1),
+                    ("E1-5", "Energy consumption and mix", "E1 Climate", 1, 1),
+                    ("E1-6", "Gross Scopes 1, 2, 3 and Total GHG emissions", "E1 Climate", 1, 1),
+                    ("E1-9", "Potential financial effects from material physical and transition risks", "E1 Climate", 1, 1),
+                    ("E2-1", "Policies related to pollution", "E2 Pollution", 1, 1),
+                    ("E3-1", "Policies related to water and marine resources", "E3 Water", 1, 1),
+                    ("E3-4", "Water consumption", "E3 Water", 1, 1),
+                    ("E4-1", "Transition plan on biodiversity and ecosystems", "E4 Biodiversity", 1, 1),
+                    ("E5-1", "Policies related to resource use and circular economy", "E5 Circular Economy", 1, 1),
+                    ("E5-5", "Resource outflows (Waste)", "E5 Circular Economy", 1, 1),
+                    # Social
+                    ("S1-1", "Policies related to own workforce", "S1 Own Workforce", 1, 1),
+                    ("S1-4", "Taking action on material impacts on own workforce", "S1 Own Workforce", 1, 1),
+                    ("S1-16", "Compensation metrics (Gender Pay Gap)", "S1 Own Workforce", 1, 1),
+                    ("S2-1", "Policies related to workers in the value chain", "S2 Value Chain", 1, 1),
+                    # Governance
+                    ("G1-1", "Corporate culture and business conduct policies", "G1 Business Conduct", 1, 1),
+                    ("G1-3", "Prevention and detection of corruption or bribery", "G1 Business Conduct", 1, 1)
+                ]
+                conn.executemany("INSERT OR REPLACE INTO f_ESRS_Requirements (esrs_code, disclosure_requirement, description, mandatory, applies_to_company) VALUES (?, ?, ?, ?, ?)", esrs_data)
+                conn.commit()
+        except sqlite3.Error as e:
+            pass # Ignore if table issue, already logged above
 init_db()
 
 def show_page_help(title, content):
