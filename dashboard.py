@@ -159,7 +159,9 @@ st.markdown("""
     /* Hide default Streamlit decoration if possible to clean up view */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-
+    header {visibility: hidden;}
+    [data-testid="stToolbar"] {visibility: hidden;}
+    
     /* --- 6. BACKGROUND BLOBS (Aqua, Top & Bottom) --- */
     .stApp {
         background-image: 
