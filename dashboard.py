@@ -13,6 +13,8 @@ try:
     from modules import scope3_travel 
     from modules import scope3_waste 
     from modules import scope3_purchased_goods 
+    from modules import env_water
+    from modules import env_waste
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -21,6 +23,8 @@ except ImportError:
     from modules import scope3_travel 
     from modules import scope3_waste 
     from modules import scope3_purchased_goods 
+    from modules import env_water
+    from modules import env_waste 
 
 # ============================================
 # 1. CONFIG & AUTH
@@ -272,7 +276,9 @@ def init_db():
             "CREATE TABLE IF NOT EXISTS f_ESRS_Requirements (esrs_code TEXT PRIMARY KEY, disclosure_requirement TEXT, description TEXT, mandatory INTEGER DEFAULT 1, applies_to_company INTEGER DEFAULT 1)",
             "CREATE TABLE IF NOT EXISTS f_Scope3_BusinessTravel (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, travel_type TEXT, distance_km REAL, fuel_type TEXT, class_type TEXT, co2_kg REAL)",
             "CREATE TABLE IF NOT EXISTS f_Scope3_Waste (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_type TEXT, weight_kg REAL, disposal_method TEXT, co2_kg REAL)",
-            "CREATE TABLE IF NOT EXISTS f_Scope3_PurchasedGoodsServices (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, category TEXT, amount_sek REAL, emission_factor_kg_per_sek REAL, co2_kg REAL)"
+            "CREATE TABLE IF NOT EXISTS f_Scope3_PurchasedGoodsServices (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, category TEXT, amount_sek REAL, emission_factor_kg_per_sek REAL, co2_kg REAL)",
+            "CREATE TABLE IF NOT EXISTS f_Water_Data (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, site_id INTEGER, withdrawal_m3 REAL, withdrawal_source TEXT, discharge_m3 REAL, discharge_dest TEXT, consumption_m3 REAL, recycled_m3 REAL)",
+            "CREATE TABLE IF NOT EXISTS f_Waste_Detailed (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, waste_category TEXT, is_hazardous INTEGER, weight_kg REAL, treatment_method TEXT, supplier TEXT)"
         ]
         for sql in tables: conn.execute(sql)
 init_db()
@@ -377,6 +383,43 @@ def render_env_travel():
     render_calc_travel_tabs()
 
 @st.fragment
+def render_env_water():
+    badges = [
+        {"text": "CSRD E3-4", "icon": "leaf"},
+        {"text": "ISO 14001: Water", "icon": "shield"}
+    ]
+    skill_spotlight_header("Miljö", "Vattenhantering", badges)
+    
+    with st.form("water_form"):
+        st.subheader("Registrera Vattenförbrukning")
+        c1, c2 = st.columns(2)
+        date = c1.date_input("Datum")
+        withdrawal = c2.number_input("Uttag (m3)", 0.0)
+        source = c1.selectbox("Källa", ["Kommunalt (Third-party)", "Grundvatten", "Ytvatten", "Annat"])
+        discharge = c2.number_input("Utsläpp/Spillvatten (m3)", 0.0)
+        dest = c1.selectbox("Mottagare", ["Avlopp (Sewer)", "Recipient (Sjö/Hav)", "Mark", "Annat"])
+        recycled = c2.number_input("Återvunnet internt (m3)", 0.0)
+        
+        if st.form_submit_button("Spara Vattendata"):
+            with get_connection() as conn:
+                env_water.add_water_record(conn, date.strftime('%Y-%m-%d'), withdrawal, source, discharge, dest, recycled)
+            st.success("Vattendata sparad!")
+            st.rerun()
+    
+    with get_connection() as conn:
+        df = env_water.get_water_data(conn)
+        metrics = env_water.calculate_water_metrics(df)
+    
+    if not df.empty:
+        c1, c2, c3 = st.columns(3)
+        with c1: skill_card("Totalförbrukning (m3)", f"{metrics['total_consumption']:.1f}")
+        with c2: skill_card("Vattenåtervinningsgrad", f"{metrics['recycling_rate']:.1f}%")
+        with c3: skill_card("Totalt Uttag", f"{metrics['total_withdrawal']:.1f}")
+        
+        st.subheader("Historik")
+        st.dataframe(df, hide_index=True, use_container_width=True)
+
+@st.fragment
 def render_env_waste():
     badges = [
         {"text": "CSRD E5-5", "icon": "leaf"},
@@ -387,19 +430,32 @@ def render_env_waste():
     
     with st.form("waste_form"):
         st.subheader("Registrera Avfall")
-        waste_date = st.date_input("Datum")
-        waste_type = st.selectbox("Avfallstyp", ['Restavfall', 'Matavfall', 'Kartong/Papper', 'Plast', 'Farligt Avfall', 'Annat'])
-        weight_kg = st.number_input("Vikt (kg)", min_value=0.0, format="%.2f")
-        disposal_method = st.selectbox("Metod", ['Deponi', 'Återvinning', 'Kompostering', 'Förbränning'])
+        c1, c2 = st.columns(2)
+        waste_date = c1.date_input("Datum")
+        waste_type = c2.selectbox("Avfallstyp", ['Restavfall', 'Matavfall', 'Kartong/Papper', 'Plast', 'Farligt Avfall', 'Elektronik', 'Metall'])
+        weight_kg = c1.number_input("Vikt (kg)", min_value=0.0, format="%.2f")
+        is_hazardous = c2.checkbox("Farligt avfall")
+        disposal_method = c1.selectbox("Behandlingsmetod", ['Återvinning', 'Reuse', 'Energiåtervinning', 'Förbränning (ej energi)', 'Deponi'])
+        supplier = c2.text_input("Avfallsentreprenör")
         
         if st.form_submit_button("Spara Avfall"):
-            co2_kg = scope3_waste.calculate_waste_emissions(waste_type, weight_kg, disposal_method)
             with get_connection() as conn:
-                conn.execute("INSERT INTO f_Scope3_Waste (date, waste_type, weight_kg, disposal_method, co2_kg) VALUES (?, ?, ?, ?, ?)",
-                             (waste_date.strftime('%Y-%m-%d'), waste_type, weight_kg, disposal_method, co2_kg))
-                conn.commit()
-            st.success(f"Registrerat! {co2_kg:.2f} kg CO2e.")
+                env_waste.add_detailed_waste_record(conn, waste_date.strftime('%Y-%m-%d'), waste_type, is_hazardous, weight_kg, disposal_method, supplier)
+            st.success("Avfallsdata registrerad!")
             st.rerun()
+
+    with get_connection() as conn:
+        df = env_waste.get_detailed_waste_data(conn)
+        metrics = env_waste.calculate_waste_metrics(df)
+    
+    if not df.empty:
+        c1, c2, c3 = st.columns(3)
+        with c1: skill_card("Total mängd avfall (kg)", f"{metrics['total_weight']:.1f}")
+        with c2: skill_card("Återvinningsgrad (%)", f"{metrics['recycling_rate']:.1f}%")
+        with c3: skill_card("Andel farligt avfall", f"{metrics['hazardous_pct']:.1f}%")
+        
+        st.subheader("Registrerat Avfall")
+        st.dataframe(df, hide_index=True, use_container_width=True)
 
 @st.fragment
 def render_social_hr():
@@ -496,6 +552,7 @@ with st.sidebar:
     st.markdown("<div style='margin-top:20px; color:#7CF7F9; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;'>Miljö (E)</div>", unsafe_allow_html=True)
     if st.button("Klimatdata", use_container_width=True): st.session_state.page = "Klimatdata"; st.rerun()
     if st.button("Resor & Transport", use_container_width=True): st.session_state.page = "Resor"; st.rerun()
+    if st.button("Vatten", use_container_width=True): st.session_state.page = "Vatten"; st.rerun()
     if st.button("Avfall", use_container_width=True): st.session_state.page = "Avfall"; st.rerun()
 
     st.markdown("<div style='margin-top:20px; color:#7CF7F9; font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;'>Socialt (S)</div>", unsafe_allow_html=True)
@@ -527,6 +584,7 @@ with st.sidebar:
 if st.session_state.page == "Översikt": render_overview()
 elif st.session_state.page == "Klimatdata": render_env_climate()
 elif st.session_state.page == "Resor": render_env_travel()
+elif st.session_state.page == "Vatten": render_env_water()
 elif st.session_state.page == "Avfall": render_env_waste()
 elif st.session_state.page == "HR": render_social_hr()
 elif st.session_state.page == "Policys": render_gov_policy()

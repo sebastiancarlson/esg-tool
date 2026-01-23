@@ -11,3 +11,8 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: Implement Comprehensive Scope 3 Data Collection & Calculation**
   *Link: [./tracks/implement_scope3_data_20240722/](./tracks/implement_scope3_data_20240722/)*
+
+---
+
+- [ ] **Track: Develop Water & Waste Management Data Module**
+  *Link: [./tracks/implement_water_waste_management_20260123/](./tracks/implement_water_waste_management_20260123/)*
