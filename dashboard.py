@@ -5,6 +5,7 @@ import os
 import time
 import plotly.express as px
 from datetime import datetime
+import importlib
 
 # Import local modules
 try:
@@ -15,6 +16,11 @@ try:
     from modules import scope3_purchased_goods 
     from modules import env_water
     from modules import env_waste
+    
+    # Force reload during development to catch updates
+    importlib.reload(governance)
+    importlib.reload(dma_tool)
+    
 except ImportError:
     import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
