@@ -661,7 +661,13 @@ def render_reports():
                     }
                     summary_df = pd.DataFrame(summary_data)
 
-                    pdf_file = report_csrd.generate_pdf_summary(summary_df)
+                    scope3_details = {
+                        "Business Travel": total_scope3_bus_travel,
+                        "Waste": total_scope3_waste,
+                        "Purchased Goods & Services": total_scope3_purchased_goods
+                    }
+
+                    pdf_file = report_csrd.generate_pdf_summary(summary_df, scope3_details)
                     st.download_button(
                         label="Ladda ner PDF-sammanfattning",
                         data=pdf_file,

@@ -9,5 +9,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-- [~] **Track: Implement Comprehensive Scope 3 Data Collection & Calculation**
+- [x] **Track: Implement Comprehensive Scope 3 Data Collection & Calculation**
   *Link: [./tracks/implement_scope3_data_20240722/](./tracks/implement_scope3_data_20240722/)*

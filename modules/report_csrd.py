@@ -107,11 +107,12 @@ def generate_csrd_report() -> BytesIO:
     output.seek(0)
     return output
 
-def generate_pdf_summary(summary_df: pd.DataFrame) -> BytesIO:
+def generate_pdf_summary(summary_df: pd.DataFrame, scope3_details: dict = None) -> BytesIO:
     """
     Generates a PDF summary of the CSRD report.
     Args:
         summary_df (pd.DataFrame): The summary DataFrame containing Scope data.
+        scope3_details (dict): Optional dictionary with details for Scope 3 categories.
     Returns:
         BytesIO: The PDF file in memory.
     """
@@ -122,16 +123,37 @@ def generate_pdf_summary(summary_df: pd.DataFrame) -> BytesIO:
     pdf.cell(200, 10, txt="CSRD Report Summary", ln=True, align="C")
     pdf.ln(10)
 
-    # Add table headers
+    # --- Main Scopes Table ---
+    pdf.set_font("Arial", style='B', size=11)
+    pdf.cell(200, 10, "Total Emissions by Scope", ln=True)
+    
     pdf.set_font("Arial", style='B', size=10)
     pdf.cell(80, 10, "Scope", 1)
     pdf.cell(80, 10, "Total CO2e (kg)", 1, ln=True)
+    
     pdf.set_font("Arial", size=10)
-
-    # Add table data
     for index, row in summary_df.iterrows():
         pdf.cell(80, 10, str(row["Scope"]), 1)
-        pdf.cell(80, 10, f"{row["Total CO2e (kg)"]:.2f}", 1, ln=True)
+        pdf.cell(80, 10, f"{row['Total CO2e (kg)']:.2f}", 1, ln=True)
+
+    # --- Scope 3 Breakdown ---
+    if scope3_details:
+        pdf.ln(10)
+        pdf.set_font("Arial", style='B', size=11)
+        pdf.cell(200, 10, "Scope 3 Breakdown", ln=True)
+        
+        pdf.set_font("Arial", style='B', size=10)
+        pdf.cell(80, 10, "Category", 1)
+        pdf.cell(80, 10, "Total CO2e (kg)", 1, ln=True)
+        
+        pdf.set_font("Arial", size=10)
+        for category, value in scope3_details.items():
+            pdf.cell(80, 10, str(category), 1)
+            pdf.cell(80, 10, f"{value:.2f}", 1, ln=True)
+
+    pdf.ln(20)
+    pdf.set_font("Arial", style='I', size=8)
+    pdf.cell(200, 10, txt="Report generated via ESG Tool - Strategic Sustainability Management", ln=True, align="C")
 
     pdf_output = BytesIO()
     pdf.output(pdf_output)
